@@ -32,7 +32,7 @@ Other changes:
 1. **Localization endpoint status.** The V6 Fig. 1 caption said "prespecified localization endpoint", but Supp. S4 says the localization and condition analyses are "secondary". V7 says "prespecified secondary endpoint". Please confirm that this matches the frozen protocol.
 2. **Title.** The PDF title is "Beyond the Blob: Localizing…", but OpenReview lists only "Localizing Inserted Lesions with Aligned Vessel Forecasts". Make them match before the 16 Nov deadline.
 3. **Recovered numbers** (not printed anywhere in V6; recovered from the vector SVGs by `scripts/recover_svg.py`, ±0.02):
-   - HiPaS localized-sensitivity CIs (Fig. 6a) and the frozen sensitivity/FPR CIs (Fig. 7b).
+   - HiPaS localized-sensitivity CIs (Fig. 7a) and the frozen sensitivity/FPR CIs (Fig. 7b).
    - All ROC curves and bands (Fig. 6).
    - The CNN learning curves (Fig. 4).
 
