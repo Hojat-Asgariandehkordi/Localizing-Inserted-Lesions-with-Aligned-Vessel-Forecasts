@@ -84,7 +84,7 @@ def fig_placement():
              fontsize=7, color=C["muted"])
 
     ax = fig.add_axes([0.63, 0.22, 0.3, 0.64])
-    rows = [("Focused, profile, crop", *D.PLACEMENT_EFFECT[0][1:4], "crop"),
+    rows = [("Low-texture, profile, crop", *D.PLACEMENT_EFFECT[0][1:4], "crop"),
             ("Broader, profile, localized", *D.PLACEMENT_EFFECT[1][1:4], "localized"),
             ("Broader, profile, crop", *D.PLACEMENT_CROP[0][1:4], "crop"),
             ("HiPaS, profile, localized", *D.PLACEMENT_EFFECT[2][1:4], "localized"),
@@ -143,8 +143,8 @@ def fig_localization():
 # ---------------------------------------------------------------- Fig. 5 strata (one column)
 STRATA_LABEL = {
     "All insertions": "All insertions",
-    "Centered": "Centred (0 mm offset)",
-    "Displaced": "Displaced from centre",
+    "Centered": "Centered (0 mm offset)",
+    "Displaced": "Displaced from center",
     "Faintest contrast": "Faintest (70 / 84 HU)",
     "Strongest contrast": "Strongest (336 / 364 HU)",
     "Strongest, displaced": "Strongest and displaced",
@@ -162,15 +162,15 @@ def fig_strata():
         ci(ax, y + 0.16, ef, lf, hf, C["fixed_aligned"], marker=EP["crop"], ms=4, lw=1.3)
         ci(ax, y - 0.16, eb, lb, hb, C["profile_aligned"], marker=EP["crop"], ms=4, lw=1.3)
         if i == 0:
-            ax.text(hf + 1.0, y + 0.16, "focused", fontsize=6.8, va="center", color=C["fixed_aligned"])
+            ax.text(hf + 1.0, y + 0.16, "low-texture", fontsize=6.8, va="center", color=C["fixed_aligned"])
             ax.text(hb + 1.0, y - 0.16, "broader", fontsize=6.8, va="center", color=C["profile_aligned"])
     ax.set_yticks(range(n)); ax.set_yticklabels([STRATA_LABEL[s[0]] for s in D.STRATA][::-1], fontsize=7.4)
     ax.get_yticklabels()[-1].set_fontweight("bold")
     ax.tick_params(axis="y", length=0); ax.grid(axis="y", visible=False)
     zero_line(ax); ax.set_xlim(-11, 48)
     ax.set_xlabel("Aligned $-$ rotated crop sens. " + CI_LAB)
-    ax.legend(handles=[Line2D([], [], marker="o", color=C["fixed_aligned"], label="Focused study: Fixed"),
-                       Line2D([], [], marker="o", color=C["profile_aligned"], label="Broader holdout: Profile")],
+    ax.legend(handles=[Line2D([], [], marker="o", color=C["fixed_aligned"], label="Low-texture: fixed subtraction"),
+                       Line2D([], [], marker="o", color=C["profile_aligned"], label="Broader set: profile")],
               loc="lower center", fontsize=6.8, handlelength=1.4, ncol=2, bbox_to_anchor=(0.35, 1.0), markerscale=0.8,
               columnspacing=0.8)
     save(fig, "strata")
@@ -214,7 +214,7 @@ def fig_native():
 def fig_roc():
     fig, axs = plt.subplots(1, 2, figsize=(style.TXT_W, 2.35), sharey=True, layout="constrained")
     ls = {"fixed_aligned": "-", "profile_aligned": "-", "profile_rotated": (0, (4, 2)), "ct_only": (0, (1, 1.5))}
-    for ax, key, title in zip(axs, ["broad", "hipas"], [r"$\bf(a)$ Broader LUNA16 holdout", r"$\bf(b)$ HiPaS native vessels"]):
+    for ax, key, title in zip(axs, ["broad", "hipas"], [r"$\bf(a)$ Broader LUNA16 held-out set", r"$\bf(b)$ HiPaS native vessels"]):
         R = D.ROC[key]
         for k, bnd in R["bands"].items():
             ax.fill_between(bnd["fpr"], bnd["lo"], bnd["hi"], color=C[k], alpha=0.14, lw=0)
@@ -250,7 +250,7 @@ def fig_learning():
     a.legend(loc="lower right", fontsize=6.8)
     a.set_title(r"$\bf(a)$ Development AUROC rises with fit patients", loc="left")
     b.plot(L["probe"]["strong_offcenter"]["epoch"], L["probe"]["strong_offcenter"]["auroc"], "o-",
-           color=C["ct_only"], ms=3.8, label="easy: strong off-centre lesions")
+           color=C["ct_only"], ms=3.8, label="easy: strong off-center lesions")
     b.plot(L["probe"]["all_variants"]["epoch"], L["probe"]["all_variants"]["auroc"], "s--",
            color=C["ct_only"], ms=3.8, mfc="white", label="hard: all insertion variants")
     b.axhline(50, color=C["axis"], lw=0.9, ls=(0, (3, 2)))

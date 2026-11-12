@@ -19,124 +19,119 @@
 \raggedbottom
 \maketitle
 
+
 \begin{abstract}
-In chest CT, a blood vessel that bends or branches inside a candidate region can look like a small round lesion. A detector may then accept the region for the wrong reason, or point to the vessel instead of the lesion. We ask whether predicting the vessels from the surrounding tissue helps such a detector, and whether it helps \emph{because the prediction is in the right place}. We build pairs of CT crops that are identical outside a 14-mm ball, one with and one without an inserted lesion, so that a vessel forecast fitted to the outside is shared by both. As a control, we rotate the same forecast by 90 degrees, which keeps its values but breaks its alignment with the anatomy. At a matched 10\% false-positive rate, the aligned forecast put the detector's mark within 3\,mm of the lesion for $6.09$ percentage points (pp) more insertions than the rotated one (95\% CI $[4.38,7.78]$) on a fresh LUNA16 holdout (170 patients, 12,240 insertions). The gain was $2.76\pp$ ($[1.77,3.76]$) on 72 scans with manually annotated native vessels. In an earlier low-texture study, alignment also raised the share of accepted lesion crops by $9.37\pp$ ($[4.56,12.29]$), but on the broader holdout this crop-level gain was smaller and its interval included zero. Plain subtraction of the forecast localized as many lesions as fitting the vessel amplitude jointly with the lesion. Correct placement of a vessel forecast therefore mainly changes \emph{where} a detector looks, at an unchanged false-alarm budget.
+Pulmonary vessels that bend or branch inside a candidate region of a chest CT scan often produce compact responses that resemble small nodules. A candidate scorer may then accept the region for the wrong reason, or return a location on the vessel rather than on the lesion. A natural remedy is to forecast the vessels from the surrounding tissue and to account for them before scoring, yet it remains unclear whether such a forecast helps because it is correctly placed or merely because it supplies additional context. We isolate this question with paired CT crops that are identical outside a 14-mm ball and differ only by an inserted lesion, so that a forecast fitted to the exterior is shared by both. A $90^\circ$ rotation of the same forecast, which preserves its values but breaks its alignment with the anatomy, serves as a sham. At a matched 10\% candidate false-positive rate (FPR), the aligned forecast places the returned location within 3\,mm of the lesion for $6.09$ percentage points (pp) more insertions than the rotated one (95\% CI $[+4.38,+7.78]$) on a held-out LUNA16 set of 170 patients and 12,240 insertions, and for $2.76\pp$ ($[+1.77,+3.76]$) more on 72 HiPaS scans with manually annotated native vessels. On a low-texture LUNA16 subset, alignment also increases crop-level sensitivity by $9.37\pp$ ($[+4.56,+12.29]$), whereas on the broader held-out set the crop-level gain is smaller and its interval includes zero. Subtracting the forecast at a fixed amplitude localizes as many lesions as estimating the amplitude jointly with the lesion. Correct placement of a vessel forecast therefore mainly changes the location returned by a candidate scorer, at an unchanged false-alarm budget.
 \end{abstract}
 
 \section{Introduction}
-Candidate scorers for chest CT look for compact, roughly spherical bright responses. Pulmonary vessels produce many of these: a vessel cut across, a bend, or a junction all give a compact peak (Fig.~\ref{fig:overview}a). A scorer then faces two separate decisions. It must decide whether a crop contains a lesion, and it must say \emph{where} in the crop to look. A vessel can spoil both. It can make a lesion-free crop look positive, and it can win the search inside a crop that does contain a lesion, so that the mark sent to a reviewer sits on the vessel.
+\label{sec:intro}
+Candidate scorers for pulmonary nodule detection respond to compact, approximately spherical bright structures in chest CT. Many such responses are produced by vessels: a vessel imaged in cross-section, a bend, or a junction all yield compact peaks (Fig.~\ref{fig:overview}a). A scorer must therefore make two related decisions, namely whether a candidate crop contains a lesion and where within the crop the lesion lies. Vessels interfere with both. They can raise the score of a lesion-free crop, and within a crop that does contain a lesion they can produce the maximum of the spatial search, so that the location presented to a reader falls on the vessel.
 
-The vessels that pass through a candidate region are usually visible as they enter and leave it. A natural idea is therefore to predict, or \emph{forecast}, each vessel's continuation through the region from the tissue outside it, and to explain away the predicted vessel before searching for a lesion (Fig.~\ref{fig:overview}c). Showing that this works requires more care than it seems. A forecast adds extra input and extra capacity, and it carries information about the type of background in the crop. Any of these could raise a score even if the forecast were in the wrong place.
+Because vessels that traverse a candidate region are usually visible where they enter and leave it, their course through the region can be forecast from the surrounding tissue and accounted for before the search (Fig.~\ref{fig:overview}c). Demonstrating that such a forecast helps for the intended reason is less straightforward than it may appear. A forecast adds input and model capacity, and it correlates with the type of background in the crop; each of these effects could raise a score even if the forecast were spatially misplaced.
 
-We therefore test one specific claim: \emph{the forecast helps because it is aligned with the anatomy}. Two design choices make this testable. First, each control crop and its lesion-bearing copy are identical outside a 14-mm ball, and the lesion lies inside it. The forecast, which only sees the outside, is the same for both (Fig.~\ref{fig:overview}b). Second, a sham forecast is made by rotating the same field by a quarter-turn about the slice axis. The sham keeps every value, scale and smoothness of the forecast but no longer matches the vessels (Fig.~\ref{fig:overview}c, right). A third control gives the classifier only summary statistics of the exterior.
+In this work we test a specific hypothesis: a vessel forecast improves candidate scoring \emph{because it is aligned with the anatomy}. The experimental design rests on two controls. First, each control crop and its lesion-bearing counterpart are identical outside a 14-mm ball that contains the lesion, so a forecaster that observes only the exterior produces the same forecast for both (Fig.~\ref{fig:overview}b). Second, a sham forecast is obtained by rotating the same field by a quarter-turn about the slice axis; the sham retains every value, scale and degree of smoothness of the forecast but no longer coincides with the vessels (Fig.~\ref{fig:overview}c). A third control supplies the classifier with summary statistics of the exterior only. We further examine how much flexibility the vessel estimate requires by evaluating a single local scoring function, which we call a \emph{readout}, under four treatments of the vessel amplitude ranging from no forecast to a joint fit with the lesion (Sec.~\ref{sec:readout}).
 
-We also ask how much freedom to give the vessel estimate. The same local readout is run with four treatments of the vessel amplitude, from none to a joint fit with the lesion (Sec.~\ref{sec:method}). Our contributions are:
+Our contributions are as follows:
 \begin{itemize}\setlength\itemsep{0pt}
-\item a paired test that separates the effect of a forecast's \emph{placement} from the information it carries, at a fixed candidate false-positive budget;
-\item a shared-readout comparison showing that subtracting the forecast at a fixed amplitude is as good as fitting the amplitude jointly with the lesion;
-\item a localization analysis on a fresh LUNA16 holdout and on an independent dataset with annotated native vessels, showing that alignment mainly improves where the detector looks.
+\item a paired intervention that separates the effect of forecast \emph{placement} from the information a forecast carries, evaluated at a fixed candidate false-positive budget;
+\item a comparison of readouts under a shared search and classifier, showing that subtracting the forecast at a fixed amplitude performs as well as estimating the amplitude jointly with the lesion;
+\item a localization analysis on a held-out LUNA16 set and on an independent dataset with annotated native vessels, showing that alignment mainly changes the location returned by the scorer rather than the number of crops it accepts.
 \end{itemize}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/overview.pdf}
-\caption{\textbf{Problem and idea.}
-(a)~A compact-blob search inside the 10-mm core marks the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
-(b)~Each control crop and its lesion-bearing copy are identical outside 14\,mm. The forecaster sees only this exterior and continues the vessels across the hidden ball, so both crops get the same forecast $f$.
-(c)~Subtracting the aligned $f$ removes the vessel and the search returns the lesion (green cross). The rotated sham has the same values in the wrong place: the vessel stays and keeps the mark.
-Panel (a) was created in BioRender; (b)--(c) use a generated slice with the same layout, and their marks are computed by a simplified version of the readout of Sec.~\ref{sec:method}.}
+\caption{\textbf{Problem and approach.}
+(a)~A compact-blob search inside the 10-mm core returns the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
+(b)~A control crop and its lesion-bearing counterpart are identical outside 14\,mm. The forecaster observes only this exterior and continues the vessels across the hidden ball, so both crops receive the same forecast $f$.
+(c)~Subtracting the aligned forecast removes the vessel, and the search returns the lesion (green cross). The rotated sham has the same values in the wrong place; the vessel remains and still yields the returned location.
+Panel (a) was created in BioRender. Panels (b) and (c) use a generated slice with the same layout, and their returned locations are computed with a simplified version of the readout in Sec.~\ref{sec:readout}.}
 \label{fig:overview}
 \end{figure*}
 
-\section{Related work}
-\paragraph{Vessels as explanations for compact responses.}
-Multiscale Hessian filters describe local curvature and separate tubular from compact structures~\cite{frangi1998,sato1998,li2003}. A junction can still produce curvature along several axes, and the strongest response in a search region can lie away from the lesion. Agam \etal{} used reconstructed vessel trees to resolve such local ambiguities in CT~\cite{agam2005}. Charbonnier \etal{} used vessels outside a subsolid nodule contour to guide vessel segmentation inside it~\cite{charbonnier2018}. Learned candidate systems use local anatomy or multiple views~\cite{wu2010,setio2016}, and Gu \etal{} added a vessel-suppression branch to a nodule detector~\cite{gu2020}. These works motivate using context. We instead hold the exterior signal fixed and change only its spatial alignment with the candidate.
+\section{Related Work}
+\label{sec:related}
+\paragraph{Vessels in nodule candidate scoring.}
+Multiscale Hessian filters characterize local curvature and are widely used to separate tubular from compact structures~\cite{frangi1998,sato1998,li2003}. Junctions nevertheless produce curvature along several axes, and the strongest response in a search region may lie away from the lesion. Agam \etal{}~\cite{agam2005} used reconstructed vessel trees to resolve such local ambiguities in CT, and Charbonnier \etal{}~\cite{charbonnier2018} used vessels outside a subsolid nodule to guide vessel segmentation within it. Learned candidate systems exploit local anatomy or multiple views~\cite{wu2010,setio2016}, and Gu \etal{}~\cite{gu2020} added a vessel-suppression branch to a nodule detector. These works motivate the use of vascular context; we instead hold the exterior signal fixed and vary only its spatial alignment with the candidate.
+
+\paragraph{Lesion insertion for controlled evaluation.}
+Inserting simulated lesions into patient CT produces hybrid images in which the location, size and morphology of the target are known. Robins \etal{}~\cite{robins2017insertion} compared projection- and image-domain techniques for virtual lung nodule insertion and found both to yield realistic renderings, and Gong \etal{}~\cite{gong2021insertion} proposed learned lesion and noise insertion for virtual clinical trials in chest CT. We use image-domain insertion not to emulate clinical prevalence but as a paired intervention: control and lesion crops share every exterior voxel, which fixes the forecast and permits a placement sham.
 
 \paragraph{Task-based assessment of image operations.}
-A gain in pixel fidelity need not improve detection. Li \etal{} compared denoisers across detection observers, and Yu \etal{} found that image-quality measures and detection efficiency can move in opposite directions~\cite{li2021denoise,yu2023denoise}. Here the operation is vessel subtraction or conditioning. We judge it by sensitivity at a fixed false-positive budget and by whether the returned location is on the inserted target.
+Improvements in pixel-level fidelity need not translate into better detection. Li \etal{}~\cite{li2021denoise} compared denoising methods across detection observers, and Yu \etal{}~\cite{yu2023denoise} reported that image-quality measures and detection efficiency can move in opposite directions. The operation studied here is vessel subtraction or conditioning, which we assess by sensitivity at a fixed false-positive budget and by whether the returned location coincides with the inserted target.
 
-\paragraph{Detection with structured nuisance.}
-Testing for a nonnegative signal in the presence of a structured interference subspace is a classical problem~\cite{scharf1994}. We use a weighted affine background and a single exterior-derived nuisance column. Our comparison concerns where that column comes from, how its amplitude is treated, and how this changes a searched candidate score.
+\paragraph{Detection with structured interference.}
+Detecting a nonnegative signal in the presence of a structured interference subspace is a classical problem in signal processing~\cite{scharf1994}. Our readouts use a weighted affine background model and a single exterior-derived nuisance component; the comparison concerns the origin of that component, the treatment of its amplitude, and the resulting effect on a searched candidate score.
 
-\section{A controlled test of alignment}
+\section{Method}
+\label{sec:method}
+\subsection{Problem Setup and Paired Insertions}
 \label{sec:design}
-\paragraph{Crops and decisions.}
-Each input is a CT crop $y$ of $64^3$ voxels at $1.5\times0.7\times0.7\mm$ (slice, row, column) around a proposal centre $c$. We use three regions: the \emph{core} within $10\mm$ of $c$, where lesions are searched; the \emph{hidden ball} within $14\mm$; and the \emph{exterior} $E$ beyond $14\mm$. A scorer makes two decisions. The \emph{crop decision} $A(y)\in\{0,1\}$ accepts the crop for review. The \emph{location} $L(y)$ is the single point it marks.
+Each input is a CT crop $y$ of $64^3$ voxels with spacing $1.5\times0.7\times0.7\mm$ (slice, row, column), centered on a candidate proposal $c$. We distinguish three nested regions: the search \emph{core} within $10\mm$ of $c$, the \emph{hidden ball} within $14\mm$, and the \emph{exterior} $E$ beyond $14\mm$, whose inner part between 15.5 and $19.5\mm$ we call the \emph{shell}. A scorer consists of a readout, which maps the crop to template scores, and a \emph{classifier} on top of them. It produces a crop decision $A(y)\in\{0,1\}$, which accepts the crop for review, and a location $L(y)$, the single point it returns.
 
-\paragraph{Paired insertions.}
-Let $b$ be a CT background, $v$ an optional added vessel field, and $s$ an inserted lesion with $s=0$ on $E$. The control and lesion crops are
+Let $b$ denote a CT background, $v$ an optional added vessel field, and $s$ an inserted lesion with $s=0$ on $E$. The control and lesion crops are
 \begin{equation}
 y_0=b+v,\qquad y_1=b+v+s .
 \label{eq:pair}
 \end{equation}
-For native-vessel backgrounds $v=0$, since the vessels are already in $b$. Because $y_0$ and $y_1$ agree on $E$, the forecast $f=F(y|_E)$ is identical for the control and all of its insertions. All readouts score $y_0$ and $y_1$ at the same centre $c$. The scorer itself may use the whole crop; only the forecast is restricted to $E$. A score can therefore rise because a lesion is present, but never because the lesion changed the forecast.
+For native-vessel backgrounds we set $v=0$, since the vessels are already part of $b$. Because $y_0$ and $y_1$ coincide on $E$, the forecast $f=F(y|_E)$ is identical for a control and all of its insertions. All scorers evaluate $y_0$ and $y_1$ at the same center $c$ and may use the entire crop; only the forecaster is restricted to $E$. A score can thus increase because a lesion is present, but not because the lesion altered the forecast.
 
-\paragraph{Placement sham and context control.}
-Let $Q$ be a $90^\circ$ rotation about the slice axis through $c$. The row and column spacings are equal, so $Q$ permutes voxels without interpolation. The sham forecast $Qf$ keeps the radial profile, the set of values, the smoothness and the shape of $f$, but generally moves its vessels to where the anatomy has none. We compare the aligned arm with (i)~a rotated arm whose classifier is refitted on $Qf$, which lets the sham make the best use of a misplaced field, and (ii)~the aligned classifier applied to $Qf$, which removes any effect of refitting. A third control receives four exterior summary statistics but no spatial field. A gain over all three controls is attributed to placement.
+\paragraph{Placement sham and exterior-summary control.}
+Let $Q$ denote a $90^\circ$ rotation about the slice axis through $c$. Since the row and column spacings are equal, $Q$ permutes voxels without interpolation. The sham forecast $Qf$ preserves the radial profile, the multiset of values, the smoothness and the shape of $f$, but in general moves its vessels to locations without vascular anatomy. We refer to $f$ and $Qf$ as the \emph{aligned} and \emph{rotated} placements. Each aligned scorer is compared with (i)~the rotated placement with a refitted classifier, which allows the sham to make the best possible use of a misplaced field, and (ii)~the rotated placement evaluated with the aligned classifier, which removes any effect of refitting. A third control, denoted CT + shell, receives four summary statistics of the shell but no spatial field. Gains over all three controls are attributed to placement.
 
-\section{Readouts on a shared window bank}
-\label{sec:method}
-\paragraph{Forecasting from two visible legs.}
-Peaks on a sphere of radius $15.5\mm$ propose pairs of entry and exit points. A pair is kept if the signal continues against its transverse flanks at radii $17.8$ and $20.4\mm$ on both sides. For each kept chord we fit a Gaussian cross-section (width and gain) on the two exterior legs, interpolate width and amplitude along the chord, and taper the field smoothly beyond $22\mm$. The result $f$ is an additive estimate in CT units. A crop without an accepted chord has $f=0$ and is scored by the same procedure.
+\subsection{Exterior Vessel Forecast}
+\label{sec:forecast}
+The forecaster continues vessels whose entry and exit points are visible in the exterior. Peaks on a sphere of radius $15.5\mm$ propose pairs of entry and exit points, and a pair is retained if the signal continues against its transverse flanks at radii of $17.8$ and $20.4\mm$ on both sides. For each retained chord we fit a Gaussian cross-section, with width and gain, to the two exterior segments, interpolate width and amplitude along the chord, and taper the field smoothly beyond $22\mm$. The resulting forecast $f$ is an additive estimate in CT units; a crop without an accepted chord has $f=0$ and is processed by the same procedure. All forecaster constants are listed in Sec.~S1 of the supplement. We verify the shared-exterior property by confirming that the rotation preserves the value multiset of every control, that rerunning the forecaster after replacing the hidden region yields an identical field, and that the visible exteriors of every rendered pair agree bitwise. A straight chord is an approximation that curved paths and branches can violate; the native-vessel experiment in Sec.~\ref{sec:native} evaluates this case directly.
 
-Concretely, we smooth the masked crop with a $0.85\mm$ Gaussian normalized by the smoothed visibility mask and sample it at 2,400 nearly uniform anchors on the $15.5\mm$ sphere. Up to 14 prominent peaks at least $4.1\mm$ apart are paired when they are at least $27.3\mm$ apart, and up to three disjoint pairs with sufficient bilateral contrast are kept, preferring agreement and proximity to the centre. Each leg is fitted on exterior samples within $5.5\mm$ of the chord and 11--$21\mm$ from the centre, choosing the width from $\{1.15,\dots,2.9\}\mm$ by the largest reduction of the residual sum of squares; a track needs a valid fit on both legs and an amplitude of at least $77\hu$. The taper runs from 22 to $26\mm$ with a cubic smoothstep. Three checks guard the shared-exterior property: the rotated field has the same value multiset on the central 13-mm support of every control; rerunning the forecaster after replacing the hidden region gives an identical field; and the visible exterior of every rendered pair agrees bitwise. A straight chord is an approximation: curved paths, branches and other bright structures can disagree with it, which the native-vessel transfer tests directly.
-
-\paragraph{Local windows.}
-For each search centre $x$ in the core, let $W_x$ be Gaussian weights ($\sigma=3.4\mm$) on a $6\mm$ ball, with inner product $\ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p)$. Let $B$ span a constant and the three coordinates in the window. We project the observation, the forecast and a compact template onto the $W_x$-orthogonal complement of $B$:
+\subsection{Forecast-Conditioned Readouts}
+\label{sec:readout}
+For each search center $x$ in the core, let $W_x$ be Gaussian weights ($\sigma=3.4\mm$) on a $6\mm$ ball with inner product $\ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p)$, and let $B$ span a constant and the three spatial coordinates within the window. Projecting the observation, the forecast and a compact template onto the $W_x$-orthogonal complement of $B$ gives
 \begin{equation}
 z=P_x y,\qquad u=P_x f,\qquad t=P_x T_{x,r},
 \end{equation}
-with templates $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$ and $r\in\{1.85,2.7,3.7\}\mm$. The projection removes the background level and linear drift. The local model is
+with templates $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$ and radii $r\in\{1.85,2.7,3.7\}\mm$. The projection removes the local background level and linear drift. We model the projected observation as
 \begin{equation}
 z\approx g\,u+h\,t,\qquad h\ge 0,
 \label{eq:model}
 \end{equation}
-where $g$ is the vessel gain and $h$ the lesion amplitude.
-
-\paragraph{The no-lesion fit.}
-Under the null ($h=0$) we fit the gain with a penalty that keeps it near the exterior value $g=1$:
+where $g$ is the vessel gain and $h$ the lesion amplitude. In the absence of a lesion ($h=0$), the gain is estimated with a penalty toward the exterior value $g=1$,
 \begin{equation}
-J_0=\min_g \nrm{z-gu}^2+\lambda(g-1)^2,\qquad \lambda=\rho\nrm{u}^2 .
+J_0=\min_g \nrm{z-gu}^2+\lambda(g-1)^2,\qquad \lambda=\rho\nrm{u}^2 ,
 \label{eq:null}
 \end{equation}
-With $G=\nrm{u}^2+\lambda$, the minimizer is $g_0=(\ip{u}{z}+\lambda)/G$.
+whose minimizer is $g_0=(\ip{u}{z}+\lambda)/G$ with $G=\nrm{u}^2+\lambda$.
 
-\paragraph{Four treatments of the vessel gain.}
-Adding the lesion term reduces the loss by $[a]_+^2/d$, where $a$ is the residual correlation with the template and $d$ an effective template energy. The four readouts differ only in these two quantities:
-\begin{itemize}\setlength\itemsep{0pt}
-\item \emph{CT only:} $u=0$, so $a=\ip{t}{z}$ and $d=\nrm{t}^2$.
-\item \emph{Fixed:} $g=1$ from the exterior fit, so $a=\ip{t}{z-u}$, $d=\nrm{t}^2$, and $J_0=\nrm{z-u}^2$.
-\item \emph{Plug-in:} $g=g_0$ is held fixed, so $a=\ip{t}{z}-g_0\ip{t}{u}$ and $d=\nrm{t}^2$.
-\item \emph{Joint profile:} $g$ and $h$ are fitted together. Eliminating $g$ gives
+\paragraph{Treatment of the vessel gain.}
+Adding the lesion term reduces the loss by $[a]_+^2/d$, where $a$ is the correlation of the residual with the template and $d$ an effective template energy. The four readouts differ only in how $a$ and $d$ are formed. The \emph{CT-only} readout ignores the forecast ($u=0$), so that $a=\ip{t}{z}$ and $d=\nrm{t}^2$. \emph{Fixed subtraction} keeps the exterior gain $g=1$, giving $a=\ip{t}{z-u}$, $d=\nrm{t}^2$ and $J_0=\nrm{z-u}^2$. The \emph{plug-in} readout holds the no-lesion estimate $g_0$ fixed, so that $a=\ip{t}{z}-g_0\ip{t}{u}$ and $d=\nrm{t}^2$. Finally, the \emph{joint profile} (profile for short) fits $g$ and $h$ together; eliminating $g$ yields
 \begin{equation}
-J(h)=J_0-2ah+h^2 d_{\rm prof},\quad d_{\rm prof}=\nrm{t}^2-\frac{\ip{t}{u}^2}{G},
+J(h)=J_0-2ah+h^2 d_{\rm prof},\qquad d_{\rm prof}=\nrm{t}^2-\frac{\ip{t}{u}^2}{G},
 \label{eq:profile}
 \end{equation}
-with the same $a$ as plug-in.
-\end{itemize}
-Profile and plug-in coincide when template and forecast are orthogonal after projection. Where they overlap, $d_{\rm prof}<d$, so profiling gives more weight to the same residual. The gain choice matters most at the lesion. If $z=z_0+h_\star t$, the plug-in gain $g_0$ moves by $h_\star\ip{u}{t}/G$, so the plug-in correlation grows by only $h_\star(\nrm{t}^2-\ip{u}{t}^2/G)$, whereas the fixed correlation grows by the full $h_\star\nrm{t}^2$. A gain fitted inside the core can absorb part of the lesion. A fixed gain cannot, but it keeps any amplitude error of the exterior fit.
+with the same $a$ as the plug-in readout. Profile and plug-in coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<d$ and profiling assigns more weight to the same residual.
 
-Each readout has three coupled settings $(\rho,\tau,C_{\log})\in\{(.025,.018,.008),(.15,.033,.08),(.75,.055,.8)\}$ for the gain penalty, the noise floor (in normalized CT units) and the ridge strength of the classifier; fixed subtraction ignores $\rho$. Numerical floors of $10^{-9}$ on $G$ and $0.05$ on $d_{\rm prof}$ keep the scores finite. For an empty forecast all four rules give the same local test before the classifier, so any difference between them on such crops comes only from the fitted coefficients.
+The treatment of the gain matters most at the lesion itself. For $z=z_0+h_\star t$, the plug-in gain changes by $h_\star\ip{u}{t}/G$, so the plug-in correlation increases by only $h_\star(\nrm{t}^2-\ip{u}{t}^2/G)$, whereas the correlation under fixed subtraction increases by the full $h_\star\nrm{t}^2$. A gain estimated inside the core can thus absorb part of the lesion, while a fixed gain cannot but inherits any amplitude error of the exterior fit. For an empty forecast the four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
 
-\paragraph{Normalized score, search and classifier.}
-At each centre and radius the score is
+\subsection{Scoring, Search and Classification}
+\label{sec:score}
+At each center and radius the normalized score is
 \begin{equation}
 m_r(x)=\frac{[a]_+/\sqrt{d}}{\sigma_0},\qquad \sigma_0=\sqrt{J_0/\textstyle\sum_p W_x(p)+\tau^2},
 \label{eq:score}
 \end{equation}
-the square root of the loss reduction, scaled by the readout's own null residual with floor $\tau$. Algorithm~\ref{alg:readout} summarizes the procedure. The three maxima $\max_x m_r(x)$ enter a ridge-logistic classifier, and the overall maximum over $x$ and $r$ gives the location $L(y)$. All classifiers share 12 local intensity and Hessian summaries, three template maxima from a larger window and three CT-only maxima. The shell control adds four exterior summaries, and each vessel-conditioned readout adds its three conditioned maxima. Fixed, plug-in and profile readouts thus have identical feature counts and regularization budgets (Supp.~S2).
+\ie, the square root of the loss reduction scaled by the readout's own null residual with floor $\tau$. The per-radius maxima $\max_x m_r(x)$ are passed to a ridge-logistic classifier, and the overall maximizer over $x$ and $r$ defines the location $L(y)$ (Algorithm~\ref{alg:readout}). All classifiers share 12 local intensity and Hessian summaries, three template maxima from a larger window and three CT-only maxima. The CT + shell control adds its four shell summaries, and each forecast-conditioned readout adds its three conditioned maxima, so that fixed subtraction, plug-in and profile have identical feature counts and regularization budgets. Each readout is tuned over three coupled settings of the gain penalty $\rho$, the floor $\tau$ and the ridge strength (Sec.~S2).
 
 \begin{algorithm}[t]
 \caption{Forecast-conditioned candidate scoring}
 \label{alg:readout}
 \begin{algorithmic}[1]
 \small
-\Require crop $y$, centre $c$, gain rule $\in\{$CT only, fixed, plug-in, profile$\}$
+\Require crop $y$, center $c$, readout $\in\{$CT-only, fixed, plug-in, profile$\}$
 \State $f\gets F(y|_E)$ \Comment{forecast from voxels beyond 14\,mm}
-\For{centres $x$ within $10\mm$ of $c$, radii $r\in\{1.85,2.7,3.7\}\mm$}
+\For{centers $x$ within $10\mm$ of $c$, radii $r\in\{1.85,2.7,3.7\}\mm$}
   \State $z,u,t\gets P_x y,\;P_x f,\;P_x T_{x,r}$ \Comment{affine residuals}
   \State $J_0,g_0\gets$ no-lesion fit, Eq.~\eqref{eq:null} (fixed: $g=1$)
-  \State $a,d\gets$ correlation and energy for the gain rule
+  \State $a,d\gets$ correlation and energy for the readout
   \State $m_r(x)\gets [a]_+\big/\big(\sqrt{d}\,\sigma_0\big)$ \Comment{Eq.~\eqref{eq:score}}
 \EndFor
 \State $\mathbf{q}\gets$ shared CT features $\oplus\,(\max_x m_r(x))_r$
@@ -146,37 +141,48 @@ the square root of the loss reduction, scaled by the readout's own null residual
 \end{algorithmic}
 \end{algorithm}
 
-\paragraph{Comparators.}
-A Hessian comparator subtracts the same field at strength $0.35$, $0.7$ or $1.0$ before a standard compact-curvature statistic at Gaussian scales of 1.3, 2.5 and $4.0\mm$; the focused development data selected full subtraction. It shows how much a different readout adds when the nuisance estimate is fixed. A hybrid CNN with a small 3D feature extractor and a shared CT feature path takes as second input either smoothed CT, the aligned forecast, the rotated forecast or the residual $y-f$, with the same architecture, data, seeds and budget (Supp.~S6).
+\subsection{Baselines}
+\label{sec:baselines}
+The Hessian baseline subtracts the same forecast at a strength of $0.35$, $0.7$ or $1.0$ before computing a standard compact-curvature statistic at Gaussian scales of 1.3, 2.5 and $4.0\mm$. It measures the contribution of a different readout when the nuisance estimate is held fixed. The learned baseline is a hybrid CNN with a small 3D feature extractor and a shared CT feature path, whose second input is either smoothed CT (the CT-only CNN), the aligned forecast, the rotated forecast or the residual $y-f$; architecture, data, seeds and training budget are identical across inputs (Sec.~S6).
 
-\section{Data and evaluation protocol}
+\section{Experimental Setup}
 \label{sec:protocol}
-\paragraph{Three settings.}
-The \emph{focused} LUNA16 study~\cite{setio2017,armato2011} has 549 neighbourhoods from 183 held-out patients, each with a single, crossing or skew added vessel and 18 insertions. Its core intensity SD is capped at $42\hu$ to isolate cases where vessels compete strongly with the lesion. Its original thresholds and analysis were locked before testing; our new shared-readout results on these cases are retrospective development evidence. The \emph{broader} LUNA16 holdout uses a new, disjoint roster of 170 patients with four parenchymal neighbourhoods each (680 controls, 12,240 insertions), no texture cap (median core SD $117\hu$), tubes that bend and taper, and new lesion shapes (bilobed and part-solid-like) at contrasts of 84, 196 and $364\hu$ and offsets of 0, 4 and 7\,mm from the proposal centre. These shapes differ from the search templates. The \emph{HiPaS} transfer~\cite{chu2025hipas} uses 72 noncontrast scans from a different source with manual artery and vein labels, six neighbourhoods per scan between nearby vessels (432 controls, 7,776 insertions) and no added tubes. The annotations only define the sampling population and the analysis strata; the scorer sees the image alone. Table~\ref{tab:roles} lists every role.
+\subsection{Datasets}
+We evaluate on three settings derived from LUNA16~\cite{setio2017,armato2011} and HiPaS~\cite{chu2025hipas}, summarized in Table~\ref{tab:roles}. In each setting a \emph{block} is a patient (LUNA16) or a scan (HiPaS), and every control crop is paired with a bank of 18 insertions that vary lesion shape, contrast and offset.
 
-\paragraph{Sampling and lesion bank.}
-For the broader study, every patient used in any focused role or in the broader fitting and development folds is excluded, and a fixed permutation assigns the rest to disjoint calibration and test rosters (175 of 177 and 170 of 174 patients are eligible). Candidate centres are at least 38\,mm apart, more than 27\,mm from any reference or irrelevant LUNA16 finding, and at most 12\% of the 26-mm support lies above $-552\hu$. The broader holdout's core SD spans 59--$255\hu$ between its 10th and 90th percentiles (HiPaS: 123--$407\hu$, median $253\hu$), against the focused cap of $42\hu$. The new lesions are built from an anisotropic component $L(p)=\exp(-q^2)(1-q^2)_+^{0.6}$ with ellipsoidal radius $q$: a bilobed shape adds two translated components (weights .72 and .52) and a part-solid-like shape adds a broad halo and a smaller core (.40 and .60), with a random rotation and axis stretch shared across a crop's bank. The focused study used $(1-d^2/r^2)_+^{0.72}$ with radii 1.85 and 3.35\,mm at 70, 182 and $336\hu$. HiPaS centres are midpoints between annotated artery and vein surfaces 2.5--8\,mm apart, with annotated foreground in the core.
+\paragraph{Low-texture LUNA16 subset.}
+This subset comprises 549 neighborhoods from 183 patients, each with a single, crossing or skew added vessel. The core intensity standard deviation is capped at $42\hu$ to isolate cases in which vessels compete strongly with the lesion, and the lesions are compact radially symmetric signals. Thresholds and the analysis for this subset were fixed before testing. Because these cases also informed the design of the shared readouts, we treat readout comparisons on them as development results.
+
+\paragraph{Broader LUNA16 held-out set.}
+The held-out set uses 170 patients disjoint from all fitting, development and calibration data, with four parenchymal neighborhoods per patient (680 controls and 12,240 insertions). It imposes no texture cap (median core SD $117\hu$), uses added vessels that bend and taper, and introduces bilobed and part-solid-like lesions at three contrasts (84, 196 and $364\hu$) and three offsets (0, 4 and 7\,mm) from the proposal center. These shapes differ from the search templates. Sampling constraints and the lesion model are detailed in Sec.~S3.
+
+\paragraph{HiPaS native vessels.}
+The native-vessel set consists of 72 noncontrast scans from a different source with manual artery and vein annotations. Six neighborhoods per scan are centered between nearby annotated arteries and veins, yielding 432 controls and 7,776 insertions without added vessels (median core SD $253\hu$). The annotations define only the sampling population and the analysis strata; the scorer observes the image alone.
 
 \begin{table}[t]
 \centering
 \input{tables/roles_onecol}
-\caption{\textbf{Cohorts.} Blocks are LUNA16 patients or HiPaS scans; each control is one negative decision and carries 18 paired insertions.}
+\caption{\textbf{Cohorts.} Blocks are LUNA16 patients or HiPaS scans. Each control contributes one negative decision and is paired with 18 insertions.}
 \label{tab:roles}
 \end{table}
 
-\paragraph{Fitting and pre-registration.}
-Classifiers for the broader study are fitted on 80 patients and tuned on 85 others, with three coupled settings of ridge strength, floor $\tau$ and gain penalty $\rho$. Before rendering the test images we froze the cohort, the insertion bank, the analysis, and three arms chosen on development: the lead (aligned profile), the strongest alternative residual (fixed) and the refitted rotation. The primary criterion was a crop-sensitivity gain of at least 5\,pp at 10\% FPR, with a positive lower confidence limit against both the rotation and the fixed residual. Localized sensitivity was a prespecified secondary endpoint. A development block bootstrap estimated that about 123 patients give 80\% power to detect a true 5-pp crop gain over the rotation, and 74 over fixed subtraction; the 170 test patients exceed both.
+\subsection{Model Selection and Evaluation}
+\paragraph{Prespecified analysis.}
+Classifiers for the broader set are fitted on 80 patients and tuned on 85 others. Before the test images were rendered, we fixed the cohort, the insertion bank, the analysis plan and three scorers selected on development: the aligned profile as the lead scorer, fixed subtraction as the strongest alternative readout, and the rotated profile with a refitted classifier. The primary criterion was a crop-sensitivity gain of at least 5\,pp at 10\% FPR, with a positive lower confidence limit against both the rotation and fixed subtraction; localized sensitivity was a prespecified secondary endpoint. A development bootstrap indicated that approximately 123 patients provide 80\% power to detect a true 5-pp gain over the rotation, and 74 patients over fixed subtraction.
 
-\paragraph{Operating points and endpoints.}
-We report two operating points. The \emph{matched} point sets each arm to a 10\% candidate FPR on the evaluation controls, using the order statistic of their scores; it measures ranking at a fixed budget. The \emph{frozen} point applies cutoffs set on 700 independent negative crops from 175 LUNA16 calibration patients, accepting scores strictly above the 10\% order statistic; its achieved FPR can differ between arms. \emph{Localized sensitivity} is
+\paragraph{Operating points.}
+We report two operating points. The \emph{matched} operating point sets each scorer to a 10\% candidate FPR on the evaluation controls via the order statistic of their scores and therefore measures ranking at a fixed budget. The \emph{frozen} operating point applies cutoffs derived from 700 independent negative crops of 175 LUNA16 calibration patients, accepting scores strictly above the 10\% order statistic; its achieved FPR may differ between scorers.
+
+\paragraph{Metrics.}
+Crop sensitivity is the fraction of lesion crops accepted. Localized sensitivity additionally requires the returned location to lie within 3\,mm of the insertion center $x_\star$,
 \begin{equation}
-\Pr\bigl(A(y)=1,\ \|L(y)-x_\star\|\le 3\mm \mid Y=1\bigr),
+\Pr\bigl(A(y)=1,\ \|L(y)-x_\star\|\le 3\mm \mid Y=1\bigr).
 \label{eq:locsens}
 \end{equation}
-where $x_\star$ is the insertion centre. Controls still count against the FPR budget whether or not their mark is meaningful.
+Controls count against the FPR budget irrespective of their returned location.
 
 \paragraph{Uncertainty.}
-We resample 3,000 sets of patient blocks (scans for HiPaS), stratified by release fold, keeping each block's full insertion grid and controls, so all comparisons are paired. For matched intervals the cutoff is recomputed in every draw. For frozen cutoffs we report intervals conditional on the calibration set and, separately, intervals that also resample the calibration patients. Differences are in absolute percentage points.
+We draw 3,000 bootstrap resamples of blocks, stratified by release fold, retaining each block's full insertion bank and controls so that all comparisons are paired. For matched intervals the cutoff is recomputed in every draw. For frozen cutoffs we report intervals conditional on the calibration set and, separately, intervals that also resample the calibration patients. All differences are reported in absolute percentage points with 95\% confidence intervals.
 
 \section{Results}
 \label{sec:results}
@@ -184,9 +190,9 @@ We resample 3,000 sets of patient blocks (scans for HiPaS), stratified by releas
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/placement.pdf}
-\caption{\textbf{The same forecast helps only when it is placed correctly.}
-(a)~A development example: the control (left) and its lesion-bearing copy with the aligned (middle) and rotated (right) forecast outline. The thin white circle is the 14-mm mask and the gold ring the inserted lesion; note that the control already shows a compact vessel response near the insertion site. All panels share one display window; the returned marks of this example are not shown.
-(b)~Aligned minus rotated sensitivity of the joint-profile readout at the matched 10\% FPR. Circles: crop sensitivity; diamonds: localized sensitivity. Bold values: interval excludes zero. In all figures, intervals are 95\% paired block-bootstrap CIs (3,000 draws of patients, or scans for HiPaS).}
+\caption{\textbf{The same forecast helps only when it is correctly placed.}
+(a)~Development example showing the control (left) and its lesion-bearing counterpart with the aligned (middle) and rotated (right) forecast outline. The thin white circle is the 14-mm mask and the gold ring the inserted lesion; the control already exhibits a compact vessel response near the insertion site. All panels share one display window, and returned locations are not shown.
+(b)~Aligned minus rotated sensitivity of the profile readout at the matched 10\% FPR. Circles denote crop sensitivity and diamonds localized sensitivity; bold values indicate intervals that exclude zero. In all figures, intervals are 95\% paired block-bootstrap CIs (3,000 draws of patients, or scans for HiPaS).}
 \label{fig:placement}
 \end{figure*}
 
@@ -194,125 +200,127 @@ We resample 3,000 sets of patient blocks (scans for HiPaS), stratified by releas
 \centering
 \small
 \input{tables/decisive_onecol}
-\caption{\textbf{Placement and amplitude comparisons.} Sensitivity (\%) at the matched 10\% FPR. ``Focused'' reuses the focused study for development; the broader holdout uses separate fits. ``loc.\ sens.'' requires acceptance and a peak within 3\,mm (Eq.~\ref{eq:locsens}). ``frozen'' gives sensitivity\,/\,achieved FPR at the independent LUNA16 cutoffs. Bold: the lead arm chosen before testing.}
+\caption{\textbf{Placement and readout comparisons.} Sensitivity (\%) at the matched 10\% FPR on the low-texture subset (development) and the broader held-out set. Localized sensitivity (loc.\ sens.) requires acceptance and a returned location within 3\,mm (Eq.~\eqref{eq:locsens}). The frozen column gives sensitivity\,/\,achieved FPR at the independent LUNA16 cutoffs. Bold: lead scorer selected before testing.}
 \label{tab:decisive}
 \end{table}
 
-\paragraph{Alignment, in the focused study.}
-In the original locked study, the aligned profile beat its rotation by $+9.66\pp$ \ci{+8.10}{+11.19} at frozen cutoffs (achieved FPR 10.38\% vs.\ 10.02\%) and by $+9.37\pp$ \ci{+4.56}{+12.29} at matched FPR (Fig.~\ref{fig:placement}b). With the shared readout on the same cases, fixed subtraction gained $+14.72\pp$ \ci{+11.11}{+17.05} over its rotation and $+14.15\pp$ \ci{+10.73}{+16.44} over shell summaries, gaining 2,001 and losing 546 positive decisions relative to the rotation (Table~\ref{tab:decisive}).
+\subsection{Effect of Forecast Alignment}
+\label{sec:res_align}
+\paragraph{Low-texture subset.}
+On the low-texture subset, the aligned profile outperformed its rotation by $+9.66\pp$ \ci{+8.10}{+11.19} at frozen cutoffs (achieved FPR 10.38\% \vs 10.02\%) and by $+9.37\pp$ \ci{+4.56}{+12.29} at matched FPR (Fig.~\ref{fig:placement}b). Under the shared readouts, fixed subtraction gained $+14.72\pp$ \ci{+11.11}{+17.05} over its rotation and $+14.15\pp$ \ci{+10.73}{+16.44} over the CT + shell control, gaining 2,001 and losing 546 positive decisions relative to the rotation (Table~\ref{tab:decisive}).
 
-\paragraph{Alignment, in the broader holdout.}
-The broader holdout is harder: every arm's crop sensitivity is near 21--24\%. Here the aligned profile raised crop sensitivity by only $+2.08\pp$ \ci{-0.27}{+4.40} over the refitted rotation and by $+4.05\pp$ \ci{+1.37}{+6.23} over the rotation with the aligned classifier. At frozen cutoffs the difference was $+4.50\pp$, but at achieved FPRs of 10.59\% vs.\ 8.82\%; with calibration uncertainty included the interval was \ci{-0.59}{+8.31}\,pp and the excess-FPR upper limit $5.00\pp$. \textbf{The prespecified crop criterion was therefore not met.} Localization tells a different story (Fig.~\ref{fig:localization}). The rotated profile marked the lesion in 7.35\% of insertions; the aligned profile in 13.45\%, a gain of $+6.09\pp$ \ci{+4.38}{+7.78}.
+\paragraph{Broader held-out set.}
+The broader set is considerably harder, with crop sensitivities of 21--24\% for all scorers. The aligned profile increased crop sensitivity by $+2.08\pp$ \ci{-0.27}{+4.40} over the rotation with a refitted classifier and by $+4.05\pp$ \ci{+1.37}{+6.23} over the rotation evaluated with the aligned classifier. At frozen cutoffs the difference was $+4.50\pp$, albeit at achieved FPRs of 10.59\% \vs 8.82\%; including calibration uncertainty, the interval was \ci{-0.59}{+8.31}\,pp and the upper limit on excess FPR $5.00\pp$. The prespecified crop-level criterion was therefore not met. Localization, in contrast, improved substantially (Fig.~\ref{fig:localization}): the rotated profile returned the lesion location for 7.35\% of insertions and the aligned profile for 13.45\%, a gain of $+6.09\pp$ \ci{+4.38}{+7.78}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/localization.pdf}
-\caption{\textbf{Acceptance and localization are separate decisions} (broader holdout, matched 10\% FPR).
-(a)~Accepted lesion crops, split into those whose mark lies within 3\,mm of the insertion (dark; localized sensitivity) and elsewhere (light). The bar end is the crop sensitivity. All readouts use the same search and the same lesion crops.
-(b)~Paired differences (circles: crop, diamonds: localized sensitivity) with their 95\% CIs printed.}
+\caption{\textbf{Acceptance and localization are distinct decisions} (broader held-out set, matched 10\% FPR).
+(a)~Accepted lesion crops, divided into those whose returned location lies within 3\,mm of the insertion (dark; localized sensitivity) and elsewhere (light). The bar end gives crop sensitivity. All scorers use the same search and the same lesion crops.
+(b)~Paired differences in crop (circles) and localized (diamonds) sensitivity with 95\% CIs.}
 \label{fig:localization}
 \end{figure*}
 
-\paragraph{How alignment changes the mark.}
-Comparing the two arms crop by crop shows where this gain comes from. Among crops accepted by \emph{both} arms, alignment moved 386 marks from off target to within 3\,mm and 124 the other way. A further 647 crops were rejected by the rotation and accepted and localized by the aligned arm, against 163 in the reverse direction (Supp.~Tab.~S2). The net change of 746 localized insertions is much larger than the change in accepted crops because many gains happen on crops that were already accepted. The mechanism is the competition shown in Fig.~\ref{fig:overview}: if a vessel response $m(x_v)$ leads a lesion response $m(x_\ell)$ and conditioning lowers them by $d_v$ and $d_\ell$, the lesion takes the lead when $d_v-d_\ell>m(x_v)-m(x_\ell)$, whether or not the crop decision changes.
+\subsection{Acceptance versus Localization}
+\label{sec:res_loc}
+A crop-by-crop comparison of the two placements explains the difference between the endpoints. Of the net gain of 746 localized insertions, about a third arises from crops accepted under both placements, where alignment moves the returned location onto the lesion (386 crops, against 124 moved away); the remainder comes from crops that only the aligned profile accepts (647 \vs 163; Table~S2). Localization therefore improves considerably more than acceptance. This behavior follows from the competition illustrated in Fig.~\ref{fig:overview}: if a vessel response $m(x_v)$ exceeds a lesion response $m(x_\ell)$ and conditioning lowers them by $d_v$ and $d_\ell$, the lesion becomes the maximum when $d_v-d_\ell>m(x_v)-m(x_\ell)$, regardless of whether the crop decision changes.
 
-\paragraph{How much amplitude flexibility is needed?}
-More flexibility did not help. In the focused study the original profile was $-0.84\pp$ \ci{-6.15}{+2.43} below the Hessian comparator, while the matched fixed residual was $+3.41\pp$ \ci{-0.23}{+6.05} above it. In the broader holdout the profile was $-0.74\pp$ \ci{-3.04}{+0.54} below fixed subtraction in crop sensitivity, and fixed subtraction localized $+1.93\pp$ \ci{+1.05}{+3.27} more insertions (15.38\% of all insertions). With exact fields on 18 development backgrounds, where the forecast equals the added vessel, fixed subtraction and profiling both ranked 67.6\% of insertion/control pairs correctly, and plug-in 62.0\%. Fitting the gain inside the core lets part of the lesion be absorbed, as predicted in Sec.~\ref{sec:method}.
+\paragraph{Robustness.}
+The localization gain does not depend on the choice of readout or on refitting. In a post hoc analysis, fixed subtraction compared with its own separately tuned rotation gains $+9.66\pp$ \ci{+8.24}{+11.38} in localized sensitivity on the broader set and $+2.39\pp$ \ci{+1.22}{+3.28} on HiPaS. Rotating only the field under the aligned classifier yields $+4.26\pp$ \ci{+2.39}{+5.83} and $+0.51\pp$ \ci{-0.15}{+1.09}, respectively.
 
-\paragraph{A competent learned comparison.}
-The observed-CT CNN reached 67.54\% development AUROC and 36.28\% sensitivity at the 10\% cap, close to the local ridge classifier (68.08\% and 36.47\%). On the focused cases its aligned-minus-rotated difference was $-0.54\pp$ \ci{-2.80}{+0.62}, and the residual channel added $+2.16\pp$ \ci{-1.19}{+4.44}. Table~\ref{tab:learned} lists all four inputs. Before the comparison we checked that the CNN can learn: on four fit patients it reaches 99.48\% training AUROC with strong off-centre positives and 86.42\% with all insertion variants, and its development AUROC rises with the number of fit patients (Fig.~\ref{fig:learned}). A classifier that pools features can therefore use the same field without exploiting its placement. The placement gain belongs to a readout that lets the field remove a competing peak.
+\subsection{Readout Flexibility and Learned Baselines}
+\label{sec:res_gain}
+Additional flexibility in the vessel amplitude did not improve performance. On the low-texture subset, the profile trailed the Hessian baseline by $0.84\pp$ \ci{-6.15}{+2.43}, whereas fixed subtraction exceeded it by $3.41\pp$ \ci{-0.23}{+6.05}. On the broader set, the profile trailed fixed subtraction by $0.74\pp$ \ci{-3.04}{+0.54} in crop sensitivity, and fixed subtraction localized $1.93\pp$ \ci{+1.05}{+3.27} more insertions (15.38\% of all insertions). On 18 development backgrounds with exact fields, where the forecast equals the added vessel, fixed subtraction and profiling both ordered 67.6\% of insertion/control pairs correctly, compared with 62.0\% for the plug-in readout. These results are consistent with the analysis in Sec.~\ref{sec:readout}: a gain estimated inside the core can absorb part of the lesion.
+
+The CT-only CNN reached 67.54\% development AUROC and 36.28\% sensitivity at the 10\% cap, comparable to the ridge classifier on the CT-only readout (68.08\% and 36.47\%). On the low-texture subset its aligned-minus-rotated difference was $-0.54\pp$ \ci{-2.80}{+0.62}, and the residual input changed sensitivity by $+2.16\pp$ \ci{-1.19}{+4.44} (Table~\ref{tab:learned}). The network is not under-trained: it fits small training sets almost perfectly, and its development AUROC increases with the number of fitting patients (Fig.~\ref{fig:learned}; Sec.~S6). A classifier that pools learned features can therefore use the same field without exploiting its placement; the placement gain is specific to a readout in which the field can suppress a competing peak.
 
 \begin{table}[t]
 \centering
 \input{tables/learned_onecol}
-\caption{\textbf{Hybrid CNN with four second inputs} (\%). Same architecture, data, seeds and budget; the epoch is selected on development. AUROC and sensitivity (10\% FPR cap) are on the focused cases; the CT-only ridge reaches 69.17\% and 32.88\%.}
+\caption{\textbf{Hybrid CNN with four second inputs} (\%). Architecture, data, seeds and budget are identical; the epoch is selected on development. AUROC and sensitivity (10\% FPR cap) are reported on the low-texture subset, where the ridge classifier on the CT-only readout reaches 69.17\% and 32.88\%.}
 \label{tab:learned}
 \end{table}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/learning.pdf}
-\caption{\textbf{The learned comparison is a working classifier.} (a)~Observed-CT CNN AUROC versus the number of fit patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the local ridge on development for reference. (b)~Training AUROC on four fit patients for an easy case (strong off-centre lesions) and a hard case (all insertion variants); the hard probe was recorded up to 125 epochs.}
+\caption{\textbf{Training behavior of the CT-only CNN.} (a)~AUROC versus the number of fitting patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the ridge classifier on development for reference. (b)~Training AUROC on four fitting patients for an easy setting (strong off-center lesions) and a hard setting (all insertion variants), the latter recorded up to 125 epochs.}
 \label{fig:learned}
 \end{figure*}
 
-\section{Where alignment helps}
+\subsection{Analysis by Insertion Condition}
 \label{sec:conditions}
-\paragraph{Competition inside the search region.}
-Fig.~\ref{fig:strata} splits the paired crop-level gain by insertion condition, always at each study's global cutoff. Gains concentrate where a vessel is likely to win the search: displaced, high-contrast insertions. In the broader holdout these gained $+15.40\pp$ \ci{+11.84}{+19.08}. Centred insertions lost $-5.34\pp$ \ci{-9.49}{-1.25}, faint ones $-1.47\pp$ \ci{-2.60}{-0.24}, and insertions overlapping a vessel by at least 50\% were unchanged ($-0.12\pp$ \ci{-3.59}{+3.23}). A centred lesion often already is the strongest response, and a faint one leaves a weak residual even when the vessel is explained well. The focused study shows the same pattern with larger effects. A forecast-dominance score that can be computed before scoring (peak forecast relative to exterior texture; Supp.~S5) selects 40.7\% of broader crops, where the gain is $+3.29\pp$ \ci{+0.04}{+6.03}; the high-minus-low interaction, $+2.03\pp$ \ci{-1.62}{+5.11}, is not resolved. The score is the peak forecast within 13\,mm divided by $0.02$ plus the 80th--20th percentile spread of the exterior residual in the 15.5--19.5\,mm annulus, split at the development median. The high band holds 277 controls and 4,986 insertions; there the aligned and rotated profiles have frozen FPRs of 11.19\% and 9.39\% and miss 3,731 and 4,009 insertions. Outside it, the rates are 10.17\% and 8.44\% with 5,597 and 5,870 misses, so the score describes where alignment matters but does not on its own select a better operating point.
+Fig.~\ref{fig:strata} decomposes the paired crop-level gain by insertion condition, evaluated at each setting's global cutoff. Gains concentrate where a vessel is most likely to produce the search maximum, namely for displaced, high-contrast insertions, which gained $+15.40\pp$ \ci{+11.84}{+19.08} on the broader set. Centered insertions changed by $-5.34\pp$ \ci{-9.49}{-1.25} and the faintest insertions by $-1.47\pp$ \ci{-2.60}{-0.24}, while insertions overlapping a vessel by at least 50\% were unaffected ($-0.12\pp$ \ci{-3.59}{+3.23}). A centered lesion is often already the strongest response, and a faint lesion leaves a weak residual even when the vessel is well explained. The low-texture subset exhibits the same pattern with larger effects.
 
-\paragraph{Cross-checks of the localization gain.}
-The lead comparison uses the preselected profile. As a post hoc check, fixed subtraction against its own separately tuned rotation gains $+9.66\pp$ \ci{8.24}{11.38} in localized sensitivity on the broader holdout and $+2.39\pp$ \ci{1.22}{3.28} on HiPaS. Holding the aligned classifier fixed and only rotating the field gives $+4.26\pp$ \ci{2.39}{5.83} and $+0.51\pp$ \ci{-0.15}{1.09}, respectively. The gain is therefore not specific to one readout, and on the broader holdout it survives even when the classifier is not refitted.
+We also evaluated a forecast-dominance score that is available before scoring, defined as the peak forecast relative to the texture of the shell (Sec.~S5). Crops in the upper half of this score, 40.7\% of the broader set, show a gain of $+3.29\pp$ \ci{+0.04}{+6.03}, but the high-minus-low interaction of $+2.03\pp$ \ci{-1.62}{+5.11} is not resolved. Within the high-dominance band, alignment also raises the frozen FPR (11.19\% \vs 9.39\%; Sec.~S5), so the score describes where alignment matters but does not by itself identify a better operating point.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/strata.pdf}
-\caption{\textbf{Placement gains by insertion condition.} Aligned minus rotated crop sensitivity at each study's global 10\% FPR cap. Blue: fixed subtraction in the focused study (development cases); green: the prespecified joint profile in the broader holdout. Contrast values are focused / broader. Rows are not mutually exclusive.}
+\caption{\textbf{Placement gains by insertion condition.} Aligned minus rotated crop sensitivity at each setting's global 10\% FPR cap. Blue: fixed subtraction on the low-texture subset (development); green: the prespecified profile on the broader held-out set. Contrast values are given as low-texture\,/\,broader. Rows are not mutually exclusive.}
 \label{fig:strata}
 \end{figure}
 
-\paragraph{Native vessels.}
-On the 72 HiPaS scans, 7,713 of the 7,776 insertions lie within 2\,mm of an annotated artery or vein. At matched FPR, alignment improved localized sensitivity by $+2.76\pp$ \ci{+1.77}{+3.76} and crop sensitivity by $+1.36\pp$ \ci{-0.26}{+3.69}. The localization gain therefore persists when real anatomy, including curved vessels that a straight chord fits poorly, supplies the competing response. The aligned fixed and profile readouts localize about twice as many insertions as the rotation (Fig.~\ref{fig:native}a), and alignment produced 284 newly localized marks against 69 lost.
-
-\paragraph{Thresholds do not transfer.}
-Applied unchanged to HiPaS, the LUNA16 cutoffs gave the aligned profile 2.15\% sensitivity at 0.69\% FPR, versus 6.62\% at 4.63\% for its rotation (Fig.~\ref{fig:native}b). Most readouts accepted far fewer HiPaS controls than the nominal 10\%, so their realized operating points moved. The ranking result and the transferred decision rule therefore answer different questions, and a deployment claim would need negatives from the target acquisition.
-
-\paragraph{Ranking versus calibrated cutoffs.}
-Figure~\ref{fig:roc} shows the full ROC curves behind these operating points. On the broader holdout the two aligned readouts lie above the rotation and the CT-only classifier from about 3\% to 25\% FPR, so the matched result does not hinge on the 10\% cap; on HiPaS the crop-level curves nearly coincide and the gain appears only in localization. The frozen LUNA16 cutoffs (diamonds) land close to the 10\% cap on LUNA16 but far below it on HiPaS. Table~\ref{tab:cal} shows how much of the frozen-cutoff uncertainty comes from the calibration set itself: resampling the 175 calibration patients widens the broader lead-minus-rotation interval from $[+2.62,+6.32]$ to $[-0.59,+8.31]\pp$. On HiPaS the lead accepts fewer insertions \emph{and} fewer controls than its rotation, an operating-point shift rather than a ranking loss (Table~\ref{tab:hipas}).
+\subsection{Transfer to Native Vessels}
+\label{sec:native}
+On the 72 HiPaS scans, 7,713 of the 7,776 insertions lie within 2\,mm of an annotated artery or vein. At matched FPR, alignment improved localized sensitivity by $+2.76\pp$ \ci{+1.77}{+3.76} and crop sensitivity by $+1.36\pp$ \ci{-0.26}{+3.69}. The localization gain therefore persists when real anatomy, including curved vessels that a straight chord approximates poorly, supplies the competing response. Both aligned readouts localize roughly twice as many insertions as the rotation (Fig.~\ref{fig:native}a), with 284 insertions newly localized and 69 lost.
 
 \begin{table}[t]
 \centering
 \input{tables/transfer_onecol}
-\caption{\textbf{HiPaS transfer} (432 controls, 7,776 insertions; \%). Matched columns use the within-HiPaS 10\% FPR cap; the last column applies the independent LUNA16 cutoffs. Controls contain native anatomy and no inserted target.}
+\caption{\textbf{HiPaS native vessels} (432 controls, 7,776 insertions; \%). The matched columns use the within-HiPaS 10\% FPR cap; the last column applies the independent LUNA16 cutoffs. Controls contain native anatomy without an inserted target.}
 \label{tab:hipas}
 \end{table}
-
-\begin{table}[t]
-\centering
-\input{tables/calibration_onecol}
-\caption{\textbf{Paired differences at the frozen LUNA16 cutoffs} (pp, 95\% CI). ``frozen'': conditional on the calibration set; ``recal.'': calibration and evaluation blocks both resampled. The lead is the aligned profile.}
-\label{tab:cal}
-\end{table}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/roc.pdf}
-\caption{\textbf{ROC curves and transferred thresholds answer different questions.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile arms. Open circles: the frozen LUNA16 cutoffs, applied unchanged in both domains.}
-\label{fig:roc}
-\end{figure*}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/native_transfer.pdf}
 \caption{\textbf{Localization gains transfer to annotated native vessels; thresholds do not.}
 (a)~Localized sensitivity on 7,776 HiPaS insertions at the within-HiPaS 10\% FPR cap.
-(b)~Crop sensitivity and achieved FPR when the frozen LUNA16 cutoffs are applied unchanged (intervals conditional on the cutoffs). Colours as in Fig.~\ref{fig:localization}, with CT + shell in olive; diamonds: localized sensitivity; open circles: crop sensitivity at the frozen cutoffs, as in Fig.~\ref{fig:roc}.}
+(b)~Crop sensitivity and achieved FPR when the frozen LUNA16 cutoffs are applied unchanged (intervals conditional on the cutoffs). Colors follow Fig.~\ref{fig:localization}, with CT + shell in olive; diamonds denote localized sensitivity and open circles crop sensitivity at the frozen cutoffs, as in Fig.~\ref{fig:roc}.}
 \label{fig:native}
 \end{figure*}
 
-\section{Discussion and limitations}
-\label{sec:discussion}
-\paragraph{Implications for candidate scoring.}
-A forecast has several ways to look useful: its shape and amplitude correlate with the type of background in a crop. The rotation sham, the shell summaries and the shared readout isolate what its \emph{alignment} adds. We suggest two habits for work in this area: compare against a value-preserving placement sham before attributing a gain to geometry, and include plain fixed subtraction with the same search as a baseline before adding a more flexible nuisance model. When a pipeline shows a reviewer a marked location, moving that mark onto the lesion matters even if the number of accepted crops barely changes. Conversely, a gain in crop sensitivity can overstate what the mark shows when the peak stays on the vessel.
+\subsection{Ranking versus Calibration}
+\label{sec:calibration}
+When applied unchanged to HiPaS, the LUNA16 cutoffs yielded 2.15\% sensitivity at 0.69\% FPR for the aligned profile, compared with 6.62\% at 4.63\% for its rotation (Fig.~\ref{fig:native}b). Most scorers accepted far fewer HiPaS controls than the nominal 10\%, so their realized operating points shifted. Fig.~\ref{fig:roc} shows the ROC curves underlying these operating points. On the broader set, both aligned readouts lie above the rotation and the CT-only scorer between approximately 3\% and 25\% FPR, so the matched result does not depend on the choice of a 10\% cap. On HiPaS the crop-level curves nearly coincide, and the gain is confined to localization. The frozen LUNA16 cutoffs (open circles) fall close to the 10\% cap on LUNA16 but far below it on HiPaS. Table~\ref{tab:cal} quantifies the contribution of calibration uncertainty: resampling the 175 calibration patients widens the broader lead-minus-rotation interval from $[+2.62,+6.32]$ to $[-0.59,+8.31]\pp$. On HiPaS the lead scorer accepts fewer insertions and fewer controls than its rotation, which reflects a shift of the operating point rather than a loss in ranking (Table~\ref{tab:hipas}).
 
-\paragraph{Operating points.}
-The focused study's original primary criterion also required an excess-FPR upper limit of 4\,pp relative to the CT-only classifier; the observed limit was $4.92\pp$. Neither shifted condition of that study, a LUNA16 morphology shift and an independent LNDb acquisition with shifted insertions~\cite{pedrosa2021}, met its full transfer criteria (Table~\ref{tab:old}). Their within-test profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under morphology shift and 33.15\% and 32.94\% on LNDb, so ranking transferred better than the frozen cutoffs did. On LNDb, adding the spatial features to a published detector's scores changed mean FROC by $0.00\pp$ \ci{-0.21}{+0.23} against the full local classifier and $-0.13\pp$ \ci{-0.33}{+0.35} against the sham.
+The same distinction appears in two additional transfer conditions of the low-texture design, a LUNA16 morphology shift and an independent LNDb acquisition with shifted insertions~\cite{pedrosa2021}. Neither met its full transfer criteria at frozen cutoffs (Table~\ref{tab:old}); on the low-texture subset itself, the upper limit on excess FPR relative to the CT-only scorer was $4.92\pp$ against a prespecified 4\,pp. Within each test set, however, the profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under the morphology shift and 33.15\% and 32.94\% on LNDb, so ranking transferred better than the cutoffs. On LNDb, adding the spatial features to the scores of a published detector changed mean FROC by $0.00\pp$ \ci{-0.21}{+0.23} relative to the full CT-only classifier and by $-0.13\pp$ \ci{-0.33}{+0.35} relative to the sham.
+
+\begin{table}[t]
+\centering
+\input{tables/calibration_onecol}
+\caption{\textbf{Paired differences at the frozen LUNA16 cutoffs} (pp, 95\% CI). Frozen intervals are conditional on the calibration set; recalibrated (recal.) intervals resample both calibration and evaluation blocks. The lead scorer is the aligned profile.}
+\label{tab:cal}
+\end{table}
 
 \begin{table}[t]
 \centering
 \input{tables/historical_onecol}
-\caption{\textbf{Original frozen operating points of the focused study} (\%), with its own 276 LUNA16 calibration negatives. These results are separate from the new broader holdout and HiPaS transfer.}
+\caption{\textbf{Frozen operating points of the low-texture design} (\%), using its own 276 LUNA16 calibration negatives, for the subset itself and two transfer conditions.}
 \label{tab:old}
-\end{table} A matched-FPR effect establishes ranking separation at a given budget; a shift in the negative score distribution changes the realized budget at an imported threshold.
+\end{table}
 
-\paragraph{Choosing when to use the forecast.}
-A rule that falls back to the shell-only classifier when the two exterior legs disagree reached 48.9\% sensitivity at 65\% development coverage, against 47.9\% for a forecast-strength rule and 52.1\% for always using the aligned fixed residual. All three cost 132--137\,ms per loaded crop on one CPU thread. We therefore make no claim about selective use.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/roc.pdf}
+\caption{\textbf{ROC curves and transferred thresholds.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile placements. Open circles mark the frozen LUNA16 cutoffs, applied unchanged in both domains.}
+\label{fig:roc}
+\end{figure*}
+
+\section{Discussion and Limitations}
+\label{sec:discussion}
+\paragraph{Implications for candidate scoring.}
+A vessel forecast can appear useful for several reasons, since its shape and amplitude correlate with the type of background in a crop. The rotation sham, the exterior-summary control and the shared readouts together isolate the contribution of its \emph{alignment}. Gains attributed to geometry should therefore be compared against a value-preserving placement sham, and fixed subtraction with the same search provides a competitive baseline for more flexible nuisance models. When a pipeline presents a returned location to a reader, moving that location onto the lesion is valuable even if the number of accepted crops barely changes; conversely, a gain in crop sensitivity can overstate the benefit when the returned location remains on the vessel.
+
+\paragraph{Operating points.}
+A matched-FPR effect establishes ranking separation at a given budget, whereas a shift in the negative score distribution changes the realized budget at an imported threshold. In our experiments, ranking gains from alignment transferred across acquisitions more reliably than calibrated cutoffs, and a deployment-oriented claim would require negatives from the target acquisition. A reliability-based rule for using the forecast selectively did not outperform always using it (Sec.~S6).
 
 \paragraph{Scope.}
-Every positive target is an inserted signal. The broader study varies texture and morphology under a known intervention, and HiPaS adds an independently annotated native background. Real nodules, scan-level proposal pipelines, partial-volume effects and per-scan false-positive counts are outside this study; an adjudicated scan-level evaluation would be needed to quantify clinical detection.
+All positive targets are inserted signals. The broader set varies texture and morphology under a known intervention, and HiPaS adds an independently annotated native background. Real nodules, scan-level proposal pipelines, partial-volume effects and per-scan false-positive rates are beyond the scope of this study, and an adjudicated scan-level evaluation would be required to quantify clinical detection performance.
 
 \section{Conclusion}
-Paired CT insertions with a shared exterior show when vessel evidence from outside a candidate region changes the decision inside it. A correctly placed forecast releases a competing vessel peak and returns the inserted target at the same false-alarm budget, and this localization effect persists on manually annotated native vessels. Fixed subtraction with a compact-template search exploits the same alignment as well as joint profiling, which makes it a strong baseline for any more elaborate use of forecast uncertainty.
+We introduced a paired CT intervention with a shared exterior that reveals when vascular evidence from outside a candidate region changes the decision inside it. A correctly placed vessel forecast suppresses a competing vessel peak and returns the inserted target at the same false-alarm budget, and this localization effect persists on manually annotated native vessels. Fixed subtraction combined with a compact-template search exploits the same alignment as effectively as joint amplitude estimation.
 
 \FloatBarrier
 \section*{LLM Usage Statement}

@@ -78,3 +78,32 @@ The same reviewer then checked the revised figures. All but one of the remaining
 - Fig. 3: single zero line.
 
 **Open:** Fig. 2(a) still shows no returned marks, because the V6 data for this example did not include them. Authors: add the computed marks (green + / red ×) from the score arrays if you have them.
+
+## CVPR style pass
+- **Structure.** The paper now follows the standard CVPR layout:
+  1. Introduction
+  2. Related Work
+  3. Method (Problem Setup, Exterior Vessel Forecast, Forecast-Conditioned Readouts, Scoring, Baselines)
+  4. Experimental Setup (Datasets, Model Selection and Evaluation)
+  5. Results (Effect of Forecast Alignment, Acceptance vs. Localization, Readout Flexibility and Learned Baselines, Analysis by Insertion Condition, Transfer to Native Vessels, Ranking vs. Calibration)
+  6. Discussion and Limitations
+  7. Conclusion
+
+  There are no question-style headings, and the Discussion no longer reports numbers.
+- **One study, not a project history.** The paper now presents a *low-texture LUNA16 subset* (the former "focused/original/locked" study), a *broader held-out set* and *HiPaS native vessels*. The text still states openly that the low-texture cases informed the design of the readouts.
+- **Fixed vocabulary**, defined in Sec. 3.1:
+  - *readout*: CT-only, fixed subtraction, plug-in or (joint) profile;
+  - *placement*: aligned or rotated;
+  - *classifier*;
+  - *scorer* = readout + classifier;
+  - *shell*: 15.5–19.5 mm (CT + shell control);
+  - *block*;
+  - *insertion bank*.
+
+  "Arm", "head" and "fixed residual" are no longer used.
+- **Constants moved out of the main text.** Implementation constants (forecaster, sampling, lesion model, hyperparameter tuple, dominance-band counts, CNN sanity values, timing) now live in Supp. S1–S6. The main text points to them. A script confirmed that every number dropped from the main text appears in the supplement.
+- **Notation.** Decimals have leading zeros, CIs are signed brackets everywhere, equations are cited as `Eq.~\eqref`, and spelling is American.
+- **Supplement.** Audit-log sentences (CRC/ZIP checks, pilots, cohort search) were condensed into single statements.
+- **New Related Work paragraph** on lesion insertion, with two verified references: Robins et al., PMB 2017; Gong et al., SPIE 2021.
+- An independent CVPR-style audit of the writing guided this pass.
+- **One reviewer suggestion not adopted:** cutting back to 8 pages. The group asked for more than 8 pages.
