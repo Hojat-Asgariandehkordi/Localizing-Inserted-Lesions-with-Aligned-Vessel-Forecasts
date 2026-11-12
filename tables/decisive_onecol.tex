@@ -1,0 +1,26 @@
+% One-column version of tables/decisive.tex (same numbers; revision 7).
+\setlength{\tabcolsep}{1.4pt}\footnotesize
+\begin{tabular}{@{}lrrr@{\hspace{6pt}}r@{}}
+\toprule
+& Focused & \multicolumn{3}{c}{Broader LUNA16 holdout} \\
+\cmidrule(l){3-5}
+Readout & sens. & sens. & loc. sens. & frozen \\
+\midrule
+CT only              & 32.88 & 21.39 & 13.37 & 23.78\,/\,11.62 \\
+CT + shell           & 36.60 & 21.50 & 13.49 & 21.66\,/\,10.29 \\
+Hessian subtr.  & 47.34 & 14.31 & --    & 14.31\,/\,10.29 \\
+Fixed, aligned       & 50.75 & 24.05 & 15.38 & 24.74\,/\,10.59 \\
+Fixed, rotated       & 36.03 & 20.81 & 5.72  & 21.18\,/\,10.15 \\
+Plug-in, aligned     & 39.45 & 22.54 & 11.54 & 23.86\,/\,10.44 \\
+Plug-in, rotated     & 37.39 & 21.26 & 6.92  & 19.81\,/\,9.12 \\
+\textbf{Profile, aligned} & \textbf{46.50} & \textbf{23.32} & \textbf{13.45} & \textbf{23.79\,/\,10.59} \\
+Profile, rotated     & 37.13 & 21.23 & 7.35  & 19.29\,/\,8.82 \\
+Prof.\ rot., aligned clf. & -- & 19.26 & 9.19 & 19.20\,/\,10.00 \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Lead minus \ldots\ (pp, 95\% CI)}}\\
+$-$ refitted rotation & -- & \multicolumn{1}{r}{$+2.1$} & \multicolumn{1}{r}{$+6.1$} & -- \\
+                      &    & \scriptsize[$-0.3,+4.4$] & \scriptsize[$+4.4,+7.8$] & \\
+$-$ fixed, aligned    & -- & \multicolumn{1}{r}{$-0.7$} & \multicolumn{1}{r}{$-1.9$} & -- \\
+                      &    & \scriptsize[$-3.0,+0.5$] & \scriptsize[$-3.3,-1.0$] & \\
+\bottomrule
+\end{tabular}

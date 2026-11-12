@@ -11,6 +11,9 @@
 \title{Beyond the Blob\\Supplementary Material}
 \author{}
 \hypersetup{pdfauthor={},pdftitle={Beyond the Blob supplementary material}}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 \begin{document}
 \raggedbottom
 \maketitle
@@ -80,32 +83,12 @@ HiPaS releases de-identified noncontrast CT with separate artery and vein masks 
 \label{supp:inference}
 The matched ROC endpoint uses a strict rank cutoff with \(k=\lfloor0.10N_0\rfloor\) possible negative acceptances. Let \(s_{(1)}\geq\dots\geq s_{(N_0)}\) be the negative scores. A candidate passes when its score is greater than \(s_{(k+1)}\). Test scores determine the cutoff for the within-test ROC. Independent LUNA16 negatives determine the frozen cutoff. In the stratified comparisons we retain the global arm-specific cutoffs. Localization further requires the highest normalized template peak to fall within 3 mm of the insertion center. The global crop score remains the ridge output for the same arm. We count a control against the FPR budget whenever it passes the crop score.
 
-We draw 3,000 shared patient resamples within acquisition folds. Test ROC recalculates the order statistic with the drawn multiplicities and keeps ties as a group. Frozen intervals condition on the realized calibration patients and thresholds. Recalibrated intervals use an independently seeded stratified bootstrap of calibration patients. Each test draw and each calibration draw remain paired across arms. The sensitivity and FPR intervals in Table~\ref{tab:cal} display this difference. The matched localization endpoint and condition analyses are secondary. Their intervals describe individual contrasts without multiplicity adjustment.
+We draw 3,000 shared patient resamples within acquisition folds. Test ROC recalculates the order statistic with the drawn multiplicities and keeps ties as a group. Frozen intervals condition on the realized calibration patients and thresholds. Recalibrated intervals use an independently seeded stratified bootstrap of calibration patients. Each test draw and each calibration draw remain paired across arms. The sensitivity and FPR intervals in Table~3 of the main paper display this difference; the ROC curves are in its Fig.~5 and the full HiPaS operating points in its Table~2. The matched localization endpoint and condition analyses are secondary. Their intervals describe individual contrasts without multiplicity adjustment.
 
 The development bootstrap used to plan a five-point paired gain estimated about 123 patients for 80\% power to detect a nonzero crop-sensitivity difference versus the refitted rotation, and 74 versus fixed subtraction, if the true improvement were 5 pp and development variability carried to the holdout. The calculation scales the observed bootstrap standard deviation by \(\sqrt{85}\) and uses the normal 1.96 and 0.842 quantiles. The 170 eligible test patients exceed those planning counts. The practical criterion also requires an observed point estimate at least 5 pp in both comparisons. The frozen criterion separately requires at most 13\% FPR and an upper paired excess FPR limit at most 4 pp. The observed broader test failed the prespecified crop criteria.
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/roc.pdf}
-\caption{\textbf{ROC curves and transferred thresholds answer different questions.} Curves use within-cohort negative ranks. Shading gives pointwise 95\% patient- or scan-block intervals for the two profile arms. Circles mark the 10\% cap. Diamonds use the same independent LUNA16 calibration cutoffs in both domains.}
-\label{fig:roc}
-\end{figure*}
 
-\begin{table*}[!t]
-\centering
-\small
-\input{tables/calibration}
-\caption{\textbf{Paired uncertainty at independent cutoffs.} Values are percentage points with 95\% intervals. The recalibrated row resamples both the calibration and evaluation blocks. Both analyses use the same point-estimate cutoffs.}
-\label{tab:cal}
-\end{table*}
 
-\begin{table*}[!t]
-\centering
-\small
-\input{tables/transfer}
-\caption{\textbf{HiPaS transfer on 432 controls and 7,776 insertions.} Values are percentages. The matched columns use the empirical 10\% candidate FPR cap within HiPaS. The frozen columns use independent LUNA16 cutoffs. Controls contain native anatomy and no inserted target.}
-\label{tab:hipas}
-\end{table*}
 
 \begin{table*}[!t]
 \centering
@@ -150,7 +133,7 @@ All four arms use common sampled variants, axial rotations and slice reflections
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/learning.pdf}
-\caption{\textbf{Checks for a functioning learned comparison.} The learning curve varies the number of fit patients for the same observed-CT architecture, seed and epoch count. The right panel shows two small-sample training probes. Strong off-center insertions provide an easy case and all variants give a harder fit.}
+\caption{\textbf{Checks for a functioning learned comparison.} The learning curve varies the number of fit patients for the same observed-CT architecture, seed and epoch count. The right panel shows two small-sample training probes. Strong off-center insertions provide an easy case and all variants give a harder fit. Curve points are single-seed snapshots; the reported 67.54\% development AUROC averages two seeds.}
 \label{fig:learned}
 \end{figure*}
 

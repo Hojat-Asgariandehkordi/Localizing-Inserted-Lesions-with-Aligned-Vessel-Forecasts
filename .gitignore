@@ -11,3 +11,5 @@
 *.mhd
 *.raw
 data/raw/
+__pycache__/
+*.brf
