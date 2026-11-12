@@ -47,28 +47,6 @@ An empty forecast gives identical spatial and local template measurements before
 
 \section{Cohorts and insertion banks}
 \label{supp:cohort}
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-Role & Blocks & Controls & Insertions \\
-\midrule
-Focused fit & 46 & 138 & 2,484 \\
-Focused development & 39 & 117 & 2,106 \\
-Focused calibration & 92 & 276 & -- \\
-Focused evaluated & 183 & 549 & 9,882 \\
-Broader fit & 80 & 240 & 4,320 \\
-Broader development & 85 & 255 & 4,590 \\
-Broader calibration & 175 & 700 & -- \\
-Broader holdout & 170 & 680 & 12,240 \\
-HiPaS development & 24 & 144 & 2,592 \\
-HiPaS transfer & 72 & 432 & 7,776 \\
-\bottomrule
-\end{tabular}
-\caption{\textbf{Candidate denominators.} Blocks are LUNA16 patients or HiPaS release scans. The prior focused results and new shared-readout comparisons have distinct provenance. Every new control contributes one negative decision even though it is paired with 18 positives.}
-\label{tab:roles}
-\end{table}
 
 The LUNA16 archive gives an auditable TCIA subject crosswalk and a separate list of irrelevant findings \cite{setio2017,armato2011}. We verify each staged source volume and header against the release size and CRC. For the broader test and calibration rosters we exclude every patient in the original focused fit, development, calibration, and test or shift roles. We exclude the two broad fitting and development folds and the repeat subject across folds. Within each remaining fold a fixed permutation assigns patients to disjoint roles. The calibration roster retains 175 of 177 assigned patients and the test retains 170 of 174. Eligibility requires four physical neighborhoods. The seed lists and retained IDs are fixed before scoring.
 
@@ -83,7 +61,7 @@ HiPaS releases de-identified noncontrast CT with separate artery and vein masks 
 \label{supp:inference}
 The matched ROC endpoint uses a strict rank cutoff with \(k=\lfloor0.10N_0\rfloor\) possible negative acceptances. Let \(s_{(1)}\geq\dots\geq s_{(N_0)}\) be the negative scores. A candidate passes when its score is greater than \(s_{(k+1)}\). Test scores determine the cutoff for the within-test ROC. Independent LUNA16 negatives determine the frozen cutoff. In the stratified comparisons we retain the global arm-specific cutoffs. Localization further requires the highest normalized template peak to fall within 3 mm of the insertion center. The global crop score remains the ridge output for the same arm. We count a control against the FPR budget whenever it passes the crop score.
 
-We draw 3,000 shared patient resamples within acquisition folds. Test ROC recalculates the order statistic with the drawn multiplicities and keeps ties as a group. Frozen intervals condition on the realized calibration patients and thresholds. Recalibrated intervals use an independently seeded stratified bootstrap of calibration patients. Each test draw and each calibration draw remain paired across arms. The sensitivity and FPR intervals in Table~3 of the main paper display this difference; the ROC curves are in its Fig.~5 and the full HiPaS operating points in its Table~2. The matched localization endpoint and condition analyses are secondary. Their intervals describe individual contrasts without multiplicity adjustment.
+We draw 3,000 shared patient resamples within acquisition folds. Test ROC recalculates the order statistic with the drawn multiplicities and keeps ties as a group. Frozen intervals condition on the realized calibration patients and thresholds. Recalibrated intervals use an independently seeded stratified bootstrap of calibration patients. Each test draw and each calibration draw remain paired across arms. The sensitivity and FPR intervals in Table~5 of the main paper display this difference; the ROC curves are in its Fig.~6 and the full HiPaS operating points in its Table~4. The matched localization endpoint and condition analyses are secondary. Their intervals describe individual contrasts without multiplicity adjustment.
 
 The development bootstrap used to plan a five-point paired gain estimated about 123 patients for 80\% power to detect a nonzero crop-sensitivity difference versus the refitted rotation, and 74 versus fixed subtraction, if the true improvement were 5 pp and development variability carried to the holdout. The calculation scales the observed bootstrap standard deviation by \(\sqrt{85}\) and uses the normal 1.96 and 0.842 quantiles. The 170 eligible test patients exceed those planning counts. The practical criterion also requires an observed point estimate at least 5 pp in both comparisons. The frozen criterion separately requires at most 13\% FPR and an upper paired excess FPR limit at most 4 pp. The observed broader test failed the prespecified crop criteria.
 
@@ -128,22 +106,9 @@ The dominance score is the peak forecast within 13 mm divided by .02 plus the 80
 \label{supp:learned}
 The hybrid candidate scorer uses \(25^3\) voxels at 1.35-mm spacing, cropped from the resampled observed image and auxiliary volume. Its convolutions use 10, 12, and 8 channels with kernel widths 5, 3, and 1 and initial stride 2. We summarize each channel by the mean of its top eight activations in the search core and the mean within 4.5 mm. The 16 learned features and 18 shared CT summaries feed a 20-unit nonlinear head, with an additional trainable linear CT path. The comparison trains from scratch on the focused fit role with no external encoder. The local auxiliary channel is average-pooled CT. The forecast channels receive aligned or rotated fields. The residual channel receives the signed subtraction alongside the unchanged CT channel.
 
-All four arms use common sampled variants, axial rotations and slice reflections, AdamW with initial learning rate .003, cosine decay, two seeds, and 10-, 20-, and 30-epoch snapshots. We select the snapshot by development sensitivity at the matched candidate cap and average the two seed logits. We first verify the CT-only arm. It reaches 99.48\% training AUROC on 12 control crops and 48 strong off-center positives from four fit patients. The harder same-size patient probe with all insertion variants reaches 86.42\% training AUROC. The full 46-patient CT-only arm comes within one point of the local ridge on development in both AUROC and sensitivity. Figure~\ref{fig:learned} shows the learning curve and both fitting checks. Table~\ref{tab:learned} records the viewed comparison.
+All four arms use common sampled variants, axial rotations and slice reflections, AdamW with initial learning rate .003, cosine decay, two seeds, and 10-, 20-, and 30-epoch snapshots. We select the snapshot by development sensitivity at the matched candidate cap and average the two seed logits. We first verify the CT-only arm. It reaches 99.48\% training AUROC on 12 control crops and 48 strong off-center positives from four fit patients. The harder same-size patient probe with all insertion variants reaches 86.42\% training AUROC. The full 46-patient CT-only arm comes within one point of the local ridge on development in both AUROC and sensitivity. The learning curve, both fitting checks and the viewed comparison are in the main paper (Fig.~4, Table~3).
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/learning.pdf}
-\caption{\textbf{Checks for a functioning learned comparison.} The learning curve varies the number of fit patients for the same observed-CT architecture, seed and epoch count. The right panel shows two small-sample training probes. Strong off-center insertions provide an easy case and all variants give a harder fit. Curve points are single-seed snapshots; the reported 67.54\% development AUROC averages two seeds.}
-\label{fig:learned}
-\end{figure*}
 
-\begin{table*}[!t]
-\centering
-\small
-\input{tables/learned}
-\caption{\textbf{Learned comparison on the viewed focused population.} AUROC and sensitivity are percentages. Sensitivity uses the empirical 10\% candidate FPR cap. The observed-CT ridge reached 69.17\% viewed AUROC and 32.88\% sensitivity.}
-\label{tab:learned}
-\end{table*}
 
 \paragraph{Reliability and measured cost.}
 For each extrapolated chord we check the predicted and observed center-to-flank contrast beyond the amplitude-fit support on both legs. The witness uses the weaker signed support and downweights contrast disagreement. The policy ranks by this witness and otherwise uses the shell-only head. Its nonspatial control ranks by peak forecast strength. Both use the same three development coverage budgets, and the same scores for each branch. At about 65\% coverage, the two policies reached 48.91\% and 47.91\% sensitivity, compared with 52.14\% for the always-aligned fixed residual. The numbers use the same negative cap.
@@ -152,17 +117,10 @@ A separate single-thread CPU timing audit uses 120 loaded crops from 30 focused 
 
 \section{Previously locked transfer evidence}
 \label{supp:previous}
-The original focused experiment used separate thresholds from 276 controls. It supported a substantial placement effect, and its upper limit on excess FPR against local was 4.92 pp compared with the stipulated 4 pp. The morphology shift and independent LNDb acquisition with shifted insertions fell short of the full transfer criteria \cite{pedrosa2021}. Their achieved rates are in Table~\ref{tab:old}. The original within-test profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under morphology shift, and 33.15\% and 32.94\% on LNDb. These measurements preserve the distinction between ranking and calibration transfer.
+The original focused experiment used separate thresholds from 276 controls. It supported a substantial placement effect, and its upper limit on excess FPR against local was 4.92 pp compared with the stipulated 4 pp. The morphology shift and independent LNDb acquisition with shifted insertions fell short of the full transfer criteria \cite{pedrosa2021}. Their achieved rates are in Table~6 of the main paper. The original within-test profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under morphology shift, and 33.15\% and 32.94\% on LNDb. These measurements preserve the distinction between ranking and calibration transfer.
 
 The candidate route audit found no locally usable fresh nodule detection cohort with sufficient reference nodules, excluded findings, and verified exposure. The previously viewed LNDb detector analysis retained the Duke scores and boxes. Its spatial additions changed mean FROC by 0.00 pp versus the full local head (95\% CI \(-0.21\) to \(+0.23\)) and \(-0.13\pp\) (\(-0.33\) to \(+0.35\)) versus the corresponding sham. The controlled HiPaS transfer addresses a distinct question about localized detection of inserted targets on annotated vascular backgrounds.
 
-\begin{table*}[!t]
-\centering
-\small
-\input{tables/historical}
-\caption{\textbf{Original frozen operating points, in percent.} These prior results used their original LUNA16 calibration negatives. They remain separate from the new broader holdout and native-vessel transfer.}
-\label{tab:old}
-\end{table*}
 
 \FloatBarrier
 {\small
