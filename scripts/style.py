@@ -30,9 +30,12 @@ C = {
 }
 MARK = {"fixed_aligned": "s", "profile_aligned": "D", "profile_rotated": "v",
         "ct_shell": "^", "ct_only": "o", "fixed_rotated": "<"}
-LABEL = {"fixed_aligned": "Fixed subtraction, aligned", "profile_aligned": "Joint profile, aligned",
-         "profile_rotated": "Joint profile, rotated", "ct_shell": "CT + shell summaries",
-         "ct_only": "Observed CT only"}
+# One name per readout, used in every figure and table.
+LABEL = {"fixed_aligned": "Fixed, aligned", "profile_aligned": "Profile, aligned",
+         "profile_rotated": "Profile, rotated", "fixed_rotated": "Fixed, rotated",
+         "ct_shell": "CT + shell", "ct_only": "CT only"}
+# Marker = endpoint (same meaning in every figure); colour = readout.
+EP = {"crop": "o", "localized": "D"}
 
 COL_W = 3.25   # CVPR single column (in)
 TXT_W = 6.875  # CVPR text width (in)
@@ -54,7 +57,7 @@ def apply():
         "axes.labelcolor": C["ink"], "text.color": C["ink"],
         "axes.grid": True, "grid.color": C["grid"], "grid.linewidth": 0.5,
         "legend.frameon": False, "savefig.dpi": 300,
-        "savefig.bbox": "tight", "savefig.pad_inches": 0.02,
+        "savefig.bbox": "standard",
         "lines.linewidth": 1.1, "errorbar.capsize": 0,
     })
 

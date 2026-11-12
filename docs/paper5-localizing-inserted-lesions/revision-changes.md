@@ -47,3 +47,34 @@ Other changes:
 - `scripts/data.py` — every plotted number, with its source.
 - `scripts/recover_svg.py`, `scripts/recovered.json`, `scripts/assets/` — recovered values and the CT crops.
 - `figures/v6_original/` — the V6 SVGs (input to the recovery script).
+
+## Figure clarity pass (independent review + BioRender)
+An agent that was not involved in making the figures reviewed all seven of them. Fixes applied:
+- **One convention for every figure.**
+  - Colour = readout: blue Fixed, green Profile aligned, orange Profile rotated, olive CT + shell, grey CT only.
+  - Marker = endpoint: circle for crop sensitivity, diamond for localized sensitivity.
+  - Method names are the same everywhere, tables included: "Fixed, aligned", "Profile, aligned", "CT only", and so on.
+  - Every axis says "(pp, 95% CI)", and the threshold is always called the "frozen LUNA16 cutoff".
+  - Table rows are now in the same order as the figures.
+- **Figures are saved at their printed width** (6.875 in, or 3.25 in for strata), so the fonts print at the size they were set in the scripts (7–8.5 pt).
+- **Fig. 1 redesigned:** (a) problem; (b) paired crops with a shared exterior and one forecast; (c) aligned vs rotated subtraction, with computed marks; a footer defines the two outputs and both endpoints. The four-gain list moved out of the figure into Sec. 4.
+- **Fig. 2:** the 14-mm mask is now a thin solid circle (dashed/dotted always means the search core), the lesion is shown with a gold ring, and the row labels name the study, readout and endpoint. The caption now points out that the control already shows a compact vessel response near the insertion site. **Authors: please check this example.**
+- **Fig. 3:** bars coloured by readout, the bar end is explained, and the CIs are printed in (b).
+- **Fig. 4:** a chance line was added, and the easy and hard probes are named.
+- **Fig. 5:** the rows are defined (HU values, ≥50% overlap); the hollow "CI includes 0" encoding was dropped.
+- **Fig. 6:** the y-axis now reads crop sensitivity, frozen cutoffs are open squares, and the HiPaS shift is annotated.
+- **Fig. 7:** markers follow the endpoint convention, overlapping points are annotated, the y-ticks are integers, and the caption's wrong reference to Fig. 3 is fixed.
+
+**BioRender:** three drafts were generated (prompts in this session; reference sketch `figures/biorender_ref/overview_ref.jpg`). Draft 2 (https://app.biorender.com/illustrations/7ae800bf0ad2989a51521f89) is used for Fig. 1(a). Its BioRender lettering is cropped out and all labels are typeset in Times. The account then ran out of AI credits, so no further generations were possible.
+- **To do before camera-ready:**
+  - Export that figure as a PNG at 300 dpi or higher and save it over `figures/biorender/overview_draft2.jpg` (the crop box in `fig_overview.py` assumes the 1024 × 572 preview, so scale the box with the export). Rerun `python3 scripts/fig_overview.py`.
+  - Add the named BioRender citation (the review copy only says "created in BioRender").
+- With more credits, a fully illustrated Fig. 1(b) (paired crops, forecaster box) could replace the computed panel. The precise prompt is kept in `docs/paper5-localizing-inserted-lesions/biorender_prompt.md`.
+
+The same reviewer then checked the revised figures. All but one of the remaining points were fixed:
+- Fig. 1: shared exterior tinted blue, "=" replaced by a "same exterior" bracket, and the search-core key moved into the footer.
+- Fig. 6 and Fig. 7(b): frozen cutoffs are open circles in both.
+- Fig. 5: series labelled directly.
+- Fig. 3: single zero line.
+
+**Open:** Fig. 2(a) still shows no returned marks, because the V6 data for this example did not include them. Authors: add the computed marks (green + / red ×) from the score arrays if you have them.

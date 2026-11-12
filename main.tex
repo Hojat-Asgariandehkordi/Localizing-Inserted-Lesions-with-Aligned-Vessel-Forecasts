@@ -26,11 +26,11 @@ In chest CT, a blood vessel that bends or branches inside a candidate region can
 \section{Introduction}
 Candidate scorers for chest CT look for compact, roughly spherical bright responses. Pulmonary vessels produce many of these: a vessel cut across, a bend, or a junction all give a compact peak (Fig.~\ref{fig:overview}a). A scorer then faces two separate decisions. It must decide whether a crop contains a lesion, and it must say \emph{where} in the crop to look. A vessel can spoil both. It can make a lesion-free crop look positive, and it can win the search inside a crop that does contain a lesion, so that the mark sent to a reviewer sits on the vessel.
 
-The vessels that pass through a candidate region are usually visible as they enter and leave it. A natural idea is therefore to predict, or \emph{forecast}, each vessel's continuation through the region from the tissue outside it, and to explain away the predicted vessel before searching for a lesion (Fig.~\ref{fig:overview}b,c). Showing that this works requires more care than it seems. A forecast adds extra input and extra capacity, and it carries information about the type of background in the crop. Any of these could raise a score even if the forecast were in the wrong place.
+The vessels that pass through a candidate region are usually visible as they enter and leave it. A natural idea is therefore to predict, or \emph{forecast}, each vessel's continuation through the region from the tissue outside it, and to explain away the predicted vessel before searching for a lesion (Fig.~\ref{fig:overview}c). Showing that this works requires more care than it seems. A forecast adds extra input and extra capacity, and it carries information about the type of background in the crop. Any of these could raise a score even if the forecast were in the wrong place.
 
-We therefore test one specific claim: \emph{the forecast helps because it is aligned with the anatomy}. Two design choices make this testable. First, each control crop and its lesion-bearing copy are identical outside a 14-mm ball, and the lesion lies inside it. The forecast, which only sees the outside, is the same for both. Second, a sham forecast is made by rotating the same field by a quarter-turn about the slice axis (Fig.~\ref{fig:overview}d). The sham keeps every value, scale and smoothness of the forecast but no longer matches the vessels. A third control gives the classifier only summary statistics of the exterior.
+We therefore test one specific claim: \emph{the forecast helps because it is aligned with the anatomy}. Two design choices make this testable. First, each control crop and its lesion-bearing copy are identical outside a 14-mm ball, and the lesion lies inside it. The forecast, which only sees the outside, is the same for both (Fig.~\ref{fig:overview}b). Second, a sham forecast is made by rotating the same field by a quarter-turn about the slice axis. The sham keeps every value, scale and smoothness of the forecast but no longer matches the vessels (Fig.~\ref{fig:overview}c, right). A third control gives the classifier only summary statistics of the exterior.
 
-We also ask how much freedom to give the vessel estimate. The same local readout is run with four treatments of the vessel amplitude, from none to a joint fit with the lesion (Fig.~\ref{fig:overview}e). Our contributions are:
+We also ask how much freedom to give the vessel estimate. The same local readout is run with four treatments of the vessel amplitude, from none to a joint fit with the lesion (Sec.~\ref{sec:method}). Our contributions are:
 \begin{itemize}\setlength\itemsep{0pt}
 \item a paired test that separates the effect of a forecast's \emph{placement} from the information it carries, at a fixed candidate false-positive budget;
 \item a shared-readout comparison showing that subtracting the forecast at a fixed amplitude is as good as fitting the amplitude jointly with the lesion;
@@ -40,13 +40,11 @@ We also ask how much freedom to give the vessel estimate. The same local readout
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/overview.pdf}
-\caption{\textbf{Problem and idea, on a synthetic slice.}
-(a)~A compact-blob search inside the 10-mm core returns the vessel junction (red cross) instead of the fainter lesion (yellow ring).
-(b)~The forecast $f$ only sees voxels outside 14\,mm and continues the vessels from their two visible legs.
-(c)~After subtracting the aligned forecast, the same search returns the lesion (green cross).
-(d)~The rotated forecast has the same values but the wrong placement, and the vessel still wins.
-(e)~Every readout fits the same local model and differs only in how the vessel gain $g$ is set.
-The markers are computed by a simplified version of the readout of Sec.~\ref{sec:method} on generated data.}
+\caption{\textbf{Problem and idea.}
+(a)~A compact-blob search inside the 10-mm core marks the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
+(b)~Each control crop and its lesion-bearing copy are identical outside 14\,mm. The forecaster sees only this exterior and continues the vessels across the hidden ball, so both crops get the same forecast $f$.
+(c)~Subtracting the aligned $f$ removes the vessel and the search returns the lesion (green cross). The rotated sham has the same values in the wrong place: the vessel stays and keeps the mark.
+Panel (a) was created in BioRender; (b)--(c) use a generated slice with the same layout, and their marks are computed by a simplified version of the readout of Sec.~\ref{sec:method}.}
 \label{fig:overview}
 \end{figure*}
 
@@ -187,8 +185,8 @@ We resample 3,000 sets of patient blocks (scans for HiPaS), stratified by releas
 \centering
 \includegraphics[width=\textwidth]{figures/placement.pdf}
 \caption{\textbf{The same forecast helps only when it is placed correctly.}
-(a)~A development example: control, and the lesion crop with the aligned and rotated forecast contours. All panels share the display window.
-(b)~Aligned minus rotated sensitivity at the matched 10\% FPR, with 95\% paired patient- (or scan-) block intervals. Filled: the headline endpoint of each study (crop sensitivity for the focused study, localized sensitivity for the two newer ones). Hollow: crop sensitivity in the newer studies, for comparison.}
+(a)~A development example: the control (left) and its lesion-bearing copy with the aligned (middle) and rotated (right) forecast outline. The thin white circle is the 14-mm mask and the gold ring the inserted lesion; note that the control already shows a compact vessel response near the insertion site. All panels share one display window; the returned marks of this example are not shown.
+(b)~Aligned minus rotated sensitivity of the joint-profile readout at the matched 10\% FPR. Circles: crop sensitivity; diamonds: localized sensitivity. Bold values: interval excludes zero. In all figures, intervals are 95\% paired block-bootstrap CIs (3,000 draws of patients, or scans for HiPaS).}
 \label{fig:placement}
 \end{figure*}
 
@@ -210,8 +208,8 @@ The broader holdout is harder: every arm's crop sensitivity is near 21--24\%. He
 \centering
 \includegraphics[width=\textwidth]{figures/localization.pdf}
 \caption{\textbf{Acceptance and localization are separate decisions} (broader holdout, matched 10\% FPR).
-(a)~Accepted lesion crops, split into those whose peak lies within 3\,mm of the insertion (dark) and elsewhere (light). All readouts use the same search and the same positive crops.
-(b)~Paired differences in crop and localized sensitivity, with 95\% patient-block intervals.}
+(a)~Accepted lesion crops, split into those whose mark lies within 3\,mm of the insertion (dark; localized sensitivity) and elsewhere (light). The bar end is the crop sensitivity. All readouts use the same search and the same lesion crops.
+(b)~Paired differences (circles: crop, diamonds: localized sensitivity) with their 95\% CIs printed.}
 \label{fig:localization}
 \end{figure*}
 
@@ -234,7 +232,7 @@ The observed-CT CNN reached 67.54\% development AUROC and 36.28\% sensitivity at
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/learning.pdf}
-\caption{\textbf{The learned comparison is a working classifier.} (a)~Observed-CT CNN AUROC versus the number of fit patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the local ridge on development for reference. (b)~Training AUROC on four fit patients for an easy case (strong off-centre positives) and the full insertion bank.}
+\caption{\textbf{The learned comparison is a working classifier.} (a)~Observed-CT CNN AUROC versus the number of fit patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the local ridge on development for reference. (b)~Training AUROC on four fit patients for an easy case (strong off-centre lesions) and a hard case (all insertion variants); the hard probe was recorded up to 125 epochs.}
 \label{fig:learned}
 \end{figure*}
 
@@ -249,7 +247,7 @@ The lead comparison uses the preselected profile. As a post hoc check, fixed sub
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/strata.pdf}
-\caption{\textbf{Placement gains by insertion condition.} Aligned minus rotated crop sensitivity at each study's global 10\% FPR cap, with 95\% paired intervals. Filled markers: interval excludes zero. Focused: fixed subtraction on development cases. Broader: the prespecified profile on fresh cases. Groups overlap.}
+\caption{\textbf{Placement gains by insertion condition.} Aligned minus rotated crop sensitivity at each study's global 10\% FPR cap. Blue: fixed subtraction in the focused study (development cases); green: the prespecified joint profile in the broader holdout. Contrast values are focused / broader. Rows are not mutually exclusive.}
 \label{fig:strata}
 \end{figure}
 
@@ -272,14 +270,14 @@ Figure~\ref{fig:roc} shows the full ROC curves behind these operating points. On
 \begin{table}[t]
 \centering
 \input{tables/calibration_onecol}
-\caption{\textbf{Paired differences at the independent LUNA16 cutoffs} (pp, 95\% CI). ``frozen'': conditional on the calibration set; ``recal.'': calibration and evaluation blocks both resampled. The lead is the aligned profile.}
+\caption{\textbf{Paired differences at the frozen LUNA16 cutoffs} (pp, 95\% CI). ``frozen'': conditional on the calibration set; ``recal.'': calibration and evaluation blocks both resampled. The lead is the aligned profile.}
 \label{tab:cal}
 \end{table}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/roc.pdf}
-\caption{\textbf{ROC curves and transferred thresholds answer different questions.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile arms. Filled circles: matched 10\% cap. Open diamonds: the same independent LUNA16 cutoffs in both domains.}
+\caption{\textbf{ROC curves and transferred thresholds answer different questions.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile arms. Open circles: the frozen LUNA16 cutoffs, applied unchanged in both domains.}
 \label{fig:roc}
 \end{figure*}
 
@@ -288,7 +286,7 @@ Figure~\ref{fig:roc} shows the full ROC curves behind these operating points. On
 \includegraphics[width=\textwidth]{figures/native_transfer.pdf}
 \caption{\textbf{Localization gains transfer to annotated native vessels; thresholds do not.}
 (a)~Localized sensitivity on 7,776 HiPaS insertions at the within-HiPaS 10\% FPR cap.
-(b)~Crop sensitivity and achieved FPR when the independent LUNA16 cutoffs are applied unchanged. Bars: 95\% scan-block intervals (conditional on the cutoffs in (b)). Colours and symbols as in Fig.~\ref{fig:localization}.}
+(b)~Crop sensitivity and achieved FPR when the frozen LUNA16 cutoffs are applied unchanged (intervals conditional on the cutoffs). Colours as in Fig.~\ref{fig:localization}, with CT + shell in olive; diamonds: localized sensitivity; open circles: crop sensitivity at the frozen cutoffs, as in Fig.~\ref{fig:roc}.}
 \label{fig:native}
 \end{figure*}
 
