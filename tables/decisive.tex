@@ -1,0 +1,21 @@
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& Focused, viewed & \multicolumn{4}{c}{Broader LUNA16, fresh holdout} \\
+\cmidrule(lr){3-6}
+Readout & Matched sens. & Matched sens. & Localized sens. & Frozen sens. & Frozen FPR \\
+\midrule
+Observed CT only & 32.88 & 21.39 & 13.37 & 23.78 & 11.62 \\
+CT + shell summaries & 36.60 & 21.50 & 13.49 & 21.66 & 10.29 \\
+Hessian subtraction & 47.34 & 14.31 & -- & 14.31 & 10.29 \\
+Fixed subtraction, aligned & 50.75 & 24.05 & 15.38 & 24.74 & 10.59 \\
+Fixed subtraction, rotated & 36.03 & 20.81 & 5.72 & 21.18 & 10.15 \\
+Plug-in residual, aligned & 39.45 & 22.54 & 11.54 & 23.86 & 10.44 \\
+Plug-in residual, rotated & 37.39 & 21.26 & 6.92 & 19.81 & 9.12 \\
+\textbf{Joint profile, aligned} & \textbf{46.50} & \textbf{23.32} & \textbf{13.45} & \textbf{23.79} & \textbf{10.59} \\
+Joint profile, rotated & 37.13 & 21.23 & 7.35 & 19.29 & 8.82 \\
+Profile, rotated with fixed head & -- & 19.26 & 9.19 & 19.20 & 10.00 \\
+\midrule
+Lead $-$ refitted rotation & -- & +2.1 [-0.3, +4.4] & +6.1 [+4.4, +7.8] & -- & -- \\
+Lead $-$ strongest residual & -- & -0.7 [-3.0, +0.5] & -1.9 [-3.3, -1.0] & -- & -- \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,13 @@
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.blg
+*.bbl
+*.synctex.gz
+*.npz
+*.nii*
+*.mhd
+*.raw
+data/raw/
