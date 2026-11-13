@@ -29,6 +29,11 @@ CI_LAB = "(pp, 95% CI)"
 
 def zero_line(ax, vertical=True):
     (ax.axvline if vertical else ax.axhline)(0, color="#8a9aa3", lw=0.9, zorder=1)
+    # drop the grid line that would sit underneath the zero line
+    for gl, loc in zip(ax.xaxis.get_gridlines() if vertical else ax.yaxis.get_gridlines(),
+                       ax.get_xticks() if vertical else ax.get_yticks()):
+        if abs(loc) < 1e-9:
+            gl.set_visible(False)
 
 
 def ci(ax, y, est, lo, hi, col, marker="o", ms=4.6, lw=1.5, mfc=None):
@@ -73,9 +78,10 @@ def fig_placement():
         if P[key]["cross"]:
             ax.add_patch(plt.Circle(P[key]["cross"], 0.09, fill=False, lw=1.0, color="#f2c14e"))
         if "scalebar" in P[key]:
-            sb = np.array(P[key]["scalebar"]); sb[:, 1] = 0.07
-            ax.plot(sb[:, 0], sb[:, 1], color="white", lw=1.4)
-            ax.text(sb[:, 0].mean(), 0.1, "5 mm", color="white", fontsize=7, ha="center", va="bottom")
+            sb = np.array(P[key]["scalebar"]); L = sb[:, 0].max() - sb[:, 0].min()
+            ax.plot([0.04, 0.04 + L], [0.95, 0.95], color="white", lw=1.4, zorder=6)
+            ax.text(0.04 + L / 2, 0.92, "5 mm", color="white", fontsize=6.8, ha="center", va="top", zorder=6,
+                    bbox=dict(boxstyle="round,pad=0.1", fc="#1b2a33", ec="none", alpha=0.6))
         ax.set_xlim(0, 1); ax.set_ylim(0, 1)
         name = {"control": "Control (no lesion)", "aligned": "Lesion, aligned $f$", "rotated": "Lesion, rotated $f$"}[key]
         ax.set_title(name, fontsize=8, pad=2.5, color=col or C["ink"])
@@ -118,11 +124,11 @@ def fig_localization():
         t.set_color(C[k])
     a.tick_params(axis="y", length=0); a.grid(axis="y", visible=False)
     a.set_xlim(0, 30); a.set_xlabel("Lesion crops accepted (%)")
-    a.set_ylim(-0.6, 4.3)
+    a.set_ylim(-0.6, 4.65)
     a.legend(handles=[Patch(color=C["muted"]), Patch(color=C["muted"], alpha=0.28)],
              labels=["mark within 3 mm (localized)", "mark elsewhere; bar end = crop sens."],
              loc="upper center", bbox_to_anchor=(0.45, 1.0), ncol=2, fontsize=6.8, handlelength=1.0,
-             columnspacing=0.8)
+             columnspacing=0.8, frameon=True, framealpha=1.0, edgecolor="none", facecolor="white")
     a.set_title(r"$\bf(a)$ Where accepted lesion crops are marked", loc="left")
 
     for i, (cmp, ep, est, lo, hi, _) in enumerate(D.BROAD_PAIRED):
@@ -130,12 +136,14 @@ def fig_localization():
         col = C["profile_aligned"] if cmp.startswith("Profile") else C["fixed_aligned"]
         ci(b, y, est, lo, hi, col, marker=EP[ep])
         b.text(hi + 0.3, y, f"{est:+.2f} [{lo:+.2f}, {hi:+.2f}]", fontsize=6.8, va="center", color=col)
-    b.text(-3.4, 3.62, "Profile, aligned $-$ Profile, rotated", fontsize=7.6, color=C["profile_aligned"])
-    b.text(-3.4, 1.42, "Fixed, aligned $-$ Profile, aligned", fontsize=7.6, color=C["fixed_aligned"])
-    b.grid(False); zero_line(b); b.set_ylim(-0.4, 4.75); b.set_yticks([]); b.spines["left"].set_visible(False)
-    b.grid(axis="y", visible=False); b.set_xlim(-3.5, 15); b.set_xticks([-2, 0, 2, 4, 6, 8])
+    b.grid(False); zero_line(b); b.set_ylim(-0.1, 4.2)
+    b.set_yticks([3.0, 0.7]); b.set_yticklabels(["Profile:\naligned $-$ rotated", "Aligned:\nfixed $-$ profile"], fontsize=7.4)
+    for t, col in zip(b.get_yticklabels(), [C["profile_aligned"], C["fixed_aligned"]]):
+        t.set_color(col)
+    b.tick_params(axis="y", length=0); b.spines["left"].set_visible(False)
+    b.grid(axis="y", visible=False); b.set_xlim(-3.2, 14.5); b.set_xticks([-2, 0, 2, 4, 6, 8])
     b.set_xlabel("Paired difference " + CI_LAB)
-    ep_legend(b, loc="upper right", fontsize=6.8, ncol=2, bbox_to_anchor=(1.0, 1.04), handletextpad=0.2, columnspacing=0.8)
+    ep_legend(b, loc="upper right", fontsize=6.8, ncol=2, bbox_to_anchor=(1.02, 1.04), handletextpad=0.2, columnspacing=0.8)
     b.set_title(r"$\bf(b)$ Paired change at the same 10% FPR", loc="left")
     save(fig, "localization")
 
@@ -153,7 +161,7 @@ STRATA_LABEL = {
 
 
 def fig_strata():
-    fig, ax = plt.subplots(figsize=(style.COL_W, 2.45), layout="constrained")
+    fig, ax = plt.subplots(figsize=(style.COL_W, 2.25), layout="constrained")
     n = len(D.STRATA)
     for i, (g, nf, ef, lf, hf, nb, eb, lb, hb) in enumerate(D.STRATA):
         y = n - 1 - i
@@ -161,9 +169,7 @@ def fig_strata():
             ax.axhspan(y - 0.45, y + 0.45, color="#eef3f2", zorder=0, lw=0)
         ci(ax, y + 0.16, ef, lf, hf, C["fixed_aligned"], marker=EP["crop"], ms=4, lw=1.3)
         ci(ax, y - 0.16, eb, lb, hb, C["profile_aligned"], marker=EP["crop"], ms=4, lw=1.3)
-        if i == 0:
-            ax.text(hf + 1.0, y + 0.16, "low-texture", fontsize=6.8, va="center", color=C["fixed_aligned"])
-            ax.text(hb + 1.0, y - 0.16, "broader", fontsize=6.8, va="center", color=C["profile_aligned"])
+
     ax.set_yticks(range(n)); ax.set_yticklabels([STRATA_LABEL[s[0]] for s in D.STRATA][::-1], fontsize=7.4)
     ax.get_yticklabels()[-1].set_fontweight("bold")
     ax.tick_params(axis="y", length=0); ax.grid(axis="y", visible=False)

@@ -6,20 +6,16 @@ Because vessels that traverse a candidate region are usually visible where they 
 
 In this work we test a specific hypothesis: a vessel forecast improves candidate scoring \emph{because it is aligned with the anatomy}. The experimental design rests on two controls. First, each control crop and its lesion-bearing counterpart are identical outside a 14-mm ball that contains the lesion, so a forecaster that observes only the exterior produces the same forecast for both (Fig.~\ref{fig:overview}b). Second, a sham forecast is obtained by rotating the same field by a quarter-turn about the slice axis; the sham retains every value, scale and degree of smoothness of the forecast but no longer coincides with the vessels (Fig.~\ref{fig:overview}c). A third control supplies the classifier with summary statistics of the exterior only. We further examine how much flexibility the vessel estimate requires by evaluating a single local scoring function, which we call a \emph{readout}, under four treatments of the vessel amplitude ranging from no forecast to a joint fit with the lesion (Sec.~\ref{sec:readout}).
 
-Our contributions are as follows:
-\begin{itemize}\setlength\itemsep{0pt}
-\item a paired intervention that separates the effect of forecast \emph{placement} from the information a forecast carries, evaluated at a fixed candidate false-positive budget;
-\item a comparison of readouts under a shared search and classifier, showing that subtracting the forecast at a fixed amplitude performs as well as estimating the amplitude jointly with the lesion;
-\item a localization analysis on a held-out LUNA16 set and on an independent dataset with annotated native vessels, showing that alignment mainly changes the location returned by the scorer rather than the number of crops it accepts.
-\end{itemize}
+Our paper offers the following contributions. As a \textbf{paired placement test}, we introduce an intervention that separates the effect of forecast placement from the information a forecast carries, evaluated at a fixed candidate false-positive budget. Within this design, a \textbf{shared-readout comparison} shows that subtracting the forecast at a fixed amplitude performs as well as estimating the amplitude jointly with the lesion, so the benefit does not depend on a flexible nuisance model. Finally, a \textbf{localization analysis} on a held-out LUNA16 set and on an independent dataset with annotated native vessels shows that alignment mainly changes the location returned by the scorer rather than the number of crops it accepts, which is the consequence of vessel forecasting that matters when a reader inspects the returned location.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/overview.pdf}
-\caption{\textbf{Problem and approach.}
-(a)~A compact-blob search inside the 10-mm core returns the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
-(b)~A control crop and its lesion-bearing counterpart are identical outside 14\,mm. The forecaster observes only this exterior and continues the vessels across the hidden ball, so both crops receive the same forecast $f$.
+\caption{\textbf{Problem, design and outcome.}
+(a)~A compact-blob search inside the 10-mm search core (dashed white circle) returns the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
+(b)~A control crop and its lesion-bearing counterpart are identical outside the hatched 14-mm ball. The forecaster observes only this exterior and continues the vessels across the ball, so both crops receive the same forecast $f$.
 (c)~Subtracting the aligned forecast removes the vessel, and the search returns the lesion (green cross). The rotated sham has the same values in the wrong place; the vessel remains and still yields the returned location.
+(d)~On the broader held-out set at a matched 10\% candidate FPR, alignment changes the share of accepted lesion crops (crop sensitivity) only slightly but substantially increases how many are accepted with a returned location within 3\,mm of the lesion (localized sensitivity); bars are 95\% CIs (Sec.~\ref{sec:res_align}).
 Panel (a) was created in BioRender. Panels (b) and (c) use a generated slice with the same layout, and their returned locations are computed with a simplified version of the readout in Sec.~\ref{sec:readout}.}
 \label{fig:overview}
 \end{figure*}

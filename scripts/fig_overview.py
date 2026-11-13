@@ -64,10 +64,10 @@ EXT = [X.min() - PX / 2, X.max() + PX / 2, Y.max() + PX / 2, Y.min() - PX / 2]
 KW = dict(cmap="gray", vmin=-60, vmax=235, extent=EXT, interpolation="bilinear")
 
 # ---------------------------------------------------------------- layout
-H = 2.2
+H = 1.7
 fig = plt.figure(figsize=(style.TXT_W, H))
-w = 0.148; h = w * style.TXT_W / H; b0 = 0.255
-pos = {"a": 0.0, "b1": 0.222, "b2": 0.398, "c": 0.632, "d": 0.818}
+w = 0.132; h = w * style.TXT_W / H; b0 = 0.155
+pos = {"a": 0.0, "b1": 0.168, "b2": 0.313, "c": 0.48, "d": 0.623}
 ax = {k: fig.add_axes([x, b0, w, h]) for k, x in pos.items()}
 for a in ax.values():
     a.set_xticks([]); a.set_yticks([]); a.grid(False)
@@ -83,7 +83,7 @@ def mark(a, p, ok):
 
 
 def core(a, lw=0.8):
-    a.add_patch(Circle((0, 0), 10, fill=False, ls=(0, (1, 1.6)), lw=lw, color="white", zorder=4))
+    a.add_patch(Circle((0, 0), 10, fill=False, ls=(0, (3, 2)), lw=lw, color="white", zorder=4))
 
 
 def label(a, x, y, t, **k):
@@ -117,7 +117,7 @@ yb = b0 - 0.025
 fig.add_artist(matplotlib.lines.Line2D([pos["b1"] + 0.01, pos["b1"] + 0.01, pos["b2"] + w - 0.01, pos["b2"] + w - 0.01],
                                        [yb + 0.02, yb, yb, yb + 0.02], transform=fig.transFigure, lw=0.8, color=C["ink"]))
 fig.text((pos["b1"] + pos["b2"] + w) / 2, yb - 0.012,
-         "same exterior (blue, outside the hatched 14-mm ball)  $\\Rightarrow$  one forecast $f$ (teal) for both",
+         "same exterior outside the hatched 14-mm ball  $\\Rightarrow$  one forecast $f$",
          fontsize=7, ha="center", va="top", color=C["ink"])
 
 # (c) aligned, (d) rotated ------------------------------------------------------
@@ -136,7 +136,7 @@ for k, img, fld, col, ttl in [("c", y1 - f, f, TEAL, "subtract aligned $f$"),
     label(a, 0.04, 0.04, "mark on lesion" if ok else "mark stays\non vessel", ha="left", va="bottom")
 
 # panel letters and group titles
-T = 0.875
+T = b0 + h + 0.15
 for x, t in [(0.0, r"$\bf(a)$ Problem"),
              (pos["b1"], r"$\bf(b)$ Paired crops, shared exterior"),
              (pos["c"], r"$\bf(c)$ Same $f$, aligned vs rotated")]:
@@ -152,13 +152,23 @@ ym = b0 + h / 2
 arrow(pos["a"] + w + 0.008, ym, pos["b1"] - 0.008, ym)
 arrow(pos["b2"] + w + 0.008, ym, pos["c"] - 0.01, ym)
 
-# footer: outputs and endpoints
-fig.add_artist(FancyBboxPatch((0.0, 0.012), 0.995, 0.125, transform=fig.transFigure, boxstyle="round,pad=0.004",
-                              fc="#eef3f2", ec="none"))
-fig.text(0.5, 0.075,
-         "Each readout returns two outputs:  accept the crop?  (threshold set for 10% false positives on controls)   and   one mark.\n"
-         "Crop sensitivity = accepted lesion crops.   Localized sensitivity = accepted and mark within 3 mm of the lesion (gold ring).   White dashed or dotted circle: 10-mm search core.",
-         fontsize=7.1, ha="center", va="center", color=C["ink"], linespacing=1.35)
+# (d) outcome on the held-out set (values from scripts/data.py, Fig. 3b / Table 2)
+import data as D
+ao = fig.add_axes([0.875, b0 + 0.05, 0.11, h - 0.2])
+rows = [("crop", *[x for x in D.BROAD_PAIRED[0][2:5]], "o"), ("localized", *[x for x in D.BROAD_PAIRED[1][2:5]], "D")]
+for yv, (lab, est, lo, hi, mk) in zip([1, 0], rows):
+    ao.plot([lo, hi], [yv, yv], color=TEAL, lw=1.6, solid_capstyle="butt")
+    ao.plot(est, yv, marker=mk, color=TEAL, ms=5.5, ls="none")
+
+    ao.text(hi + 0.3, yv, f"{est:+.1f}", fontsize=7, color=TEAL, va="center", fontweight="bold" if lo > 0 else "normal")
+ao.axvline(0, color="#8a9aa3", lw=0.8)
+ao.set_xticks([0, 4, 8])
+ao.set_xlim(-1.0, 9.6); ao.set_ylim(-0.6, 1.6); ao.set_xticks([0, 4, 8]); ao.set_yticks([1, 0]); ao.set_yticklabels(["crop", "localized"], fontsize=7.4); ao.tick_params(axis="y", length=0)
+ao.spines["left"].set_visible(False); ao.grid(False)
+ao.tick_params(axis="x", labelsize=7)
+ao.set_xlabel("aligned $-$ rotated (pp)", fontsize=7, labelpad=1)
+fig.text(0.79, T, r"$\bf(d)$ Outcome", fontsize=8.4, va="top")
+fig.text(0.79, T - 0.085, "broader held-out set,\n10% FPR, 95% CI", fontsize=6.6, color=C["muted"], va="top")
 
 fig.savefig(ROOT / "figures/overview.pdf")
 fig.savefig("/tmp/overview.png", dpi=200)
