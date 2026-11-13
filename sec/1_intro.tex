@@ -1,0 +1,25 @@
+\section{Introduction}
+\label{sec:intro}
+Candidate scorers for pulmonary nodule detection respond to compact, approximately spherical bright structures in chest CT. Many such responses are produced by vessels: a vessel imaged in cross-section, a bend, or a junction all yield compact peaks (Fig.~\ref{fig:overview}a). A scorer must therefore make two related decisions, namely whether a candidate crop contains a lesion and where within the crop the lesion lies. Vessels interfere with both. They can raise the score of a lesion-free crop, and within a crop that does contain a lesion they can produce the maximum of the spatial search, so that the location presented to a reader falls on the vessel.
+
+Because vessels that traverse a candidate region are usually visible where they enter and leave it, their course through the region can be forecast from the surrounding tissue and accounted for before the search (Fig.~\ref{fig:overview}c). Demonstrating that such a forecast helps for the intended reason is less straightforward than it may appear. A forecast adds input and model capacity, and it correlates with the type of background in the crop; each of these effects could raise a score even if the forecast were spatially misplaced.
+
+In this work we test a specific hypothesis: a vessel forecast improves candidate scoring \emph{because it is aligned with the anatomy}. The experimental design rests on two controls. First, each control crop and its lesion-bearing counterpart are identical outside a 14-mm ball that contains the lesion, so a forecaster that observes only the exterior produces the same forecast for both (Fig.~\ref{fig:overview}b). Second, a sham forecast is obtained by rotating the same field by a quarter-turn about the slice axis; the sham retains every value, scale and degree of smoothness of the forecast but no longer coincides with the vessels (Fig.~\ref{fig:overview}c). A third control supplies the classifier with summary statistics of the exterior only. We further examine how much flexibility the vessel estimate requires by evaluating a single local scoring function, which we call a \emph{readout}, under four treatments of the vessel amplitude ranging from no forecast to a joint fit with the lesion (Sec.~\ref{sec:readout}).
+
+Our contributions are as follows:
+\begin{itemize}\setlength\itemsep{0pt}
+\item a paired intervention that separates the effect of forecast \emph{placement} from the information a forecast carries, evaluated at a fixed candidate false-positive budget;
+\item a comparison of readouts under a shared search and classifier, showing that subtracting the forecast at a fixed amplitude performs as well as estimating the amplitude jointly with the lesion;
+\item a localization analysis on a held-out LUNA16 set and on an independent dataset with annotated native vessels, showing that alignment mainly changes the location returned by the scorer rather than the number of crops it accepts.
+\end{itemize}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/overview.pdf}
+\caption{\textbf{Problem and approach.}
+(a)~A compact-blob search inside the 10-mm core returns the bright vessel junction (red cross) instead of the nearby lesion (gold ring).
+(b)~A control crop and its lesion-bearing counterpart are identical outside 14\,mm. The forecaster observes only this exterior and continues the vessels across the hidden ball, so both crops receive the same forecast $f$.
+(c)~Subtracting the aligned forecast removes the vessel, and the search returns the lesion (green cross). The rotated sham has the same values in the wrong place; the vessel remains and still yields the returned location.
+Panel (a) was created in BioRender. Panels (b) and (c) use a generated slice with the same layout, and their returned locations are computed with a simplified version of the readout in Sec.~\ref{sec:readout}.}
+\label{fig:overview}
+\end{figure*}

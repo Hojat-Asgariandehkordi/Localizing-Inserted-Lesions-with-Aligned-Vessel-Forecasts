@@ -1,0 +1,123 @@
+\section{Results}
+\label{sec:results}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/placement.pdf}
+\caption{\textbf{The same forecast helps only when it is correctly placed.}
+(a)~Development example showing the control (left) and its lesion-bearing counterpart with the aligned (middle) and rotated (right) forecast outline. The thin white circle is the 14-mm mask and the gold ring the inserted lesion; the control already exhibits a compact vessel response near the insertion site. All panels share one display window, and returned locations are not shown.
+(b)~Aligned minus rotated sensitivity of the profile readout at the matched 10\% FPR. Circles denote crop sensitivity and diamonds localized sensitivity; bold values indicate intervals that exclude zero. In all figures, intervals are 95\% paired block-bootstrap CIs (3,000 draws of patients, or scans for HiPaS).}
+\label{fig:placement}
+\end{figure*}
+
+\begin{table}[t]
+\centering
+\small
+\input{tables/decisive_onecol}
+\caption{\textbf{Placement and readout comparisons.} Sensitivity (\%) at the matched 10\% FPR on the low-texture subset (development) and the broader held-out set. Localized sensitivity (loc.\ sens.) requires acceptance and a returned location within 3\,mm (Eq.~\eqref{eq:locsens}). The frozen column gives sensitivity\,/\,achieved FPR at the independent LUNA16 cutoffs. Bold: lead scorer selected before testing.}
+\label{tab:decisive}
+\end{table}
+
+\subsection{Effect of Forecast Alignment}
+\label{sec:res_align}
+\paragraph{Low-texture subset.}
+On the low-texture subset, the aligned profile outperformed its rotation by $+9.66\pp$ \ci{+8.10}{+11.19} at frozen cutoffs (achieved FPR 10.38\% \vs 10.02\%) and by $+9.37\pp$ \ci{+4.56}{+12.29} at matched FPR (Fig.~\ref{fig:placement}b). Under the shared readouts, fixed subtraction gained $+14.72\pp$ \ci{+11.11}{+17.05} over its rotation and $+14.15\pp$ \ci{+10.73}{+16.44} over the CT + shell control, gaining 2,001 and losing 546 positive decisions relative to the rotation (Table~\ref{tab:decisive}).
+
+\paragraph{Broader held-out set.}
+The broader set is considerably harder, with crop sensitivities of 21--24\% for all scorers. The aligned profile increased crop sensitivity by $+2.08\pp$ \ci{-0.27}{+4.40} over the rotation with a refitted classifier and by $+4.05\pp$ \ci{+1.37}{+6.23} over the rotation evaluated with the aligned classifier. At frozen cutoffs the difference was $+4.50\pp$, albeit at achieved FPRs of 10.59\% \vs 8.82\%; including calibration uncertainty, the interval was \ci{-0.59}{+8.31}\,pp and the upper limit on excess FPR $5.00\pp$. The prespecified crop-level criterion was therefore not met. Localization, in contrast, improved substantially (Fig.~\ref{fig:localization}): the rotated profile returned the lesion location for 7.35\% of insertions and the aligned profile for 13.45\%, a gain of $+6.09\pp$ \ci{+4.38}{+7.78}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/localization.pdf}
+\caption{\textbf{Acceptance and localization are distinct decisions} (broader held-out set, matched 10\% FPR).
+(a)~Accepted lesion crops, divided into those whose returned location lies within 3\,mm of the insertion (dark; localized sensitivity) and elsewhere (light). The bar end gives crop sensitivity. All scorers use the same search and the same lesion crops.
+(b)~Paired differences in crop (circles) and localized (diamonds) sensitivity with 95\% CIs.}
+\label{fig:localization}
+\end{figure*}
+
+\subsection{Acceptance versus Localization}
+\label{sec:res_loc}
+A crop-by-crop comparison of the two placements explains the difference between the endpoints. Of the net gain of 746 localized insertions, about a third arises from crops accepted under both placements, where alignment moves the returned location onto the lesion (386 crops, against 124 moved away); the remainder comes from crops that only the aligned profile accepts (647 \vs 163; Table~S2). Localization therefore improves considerably more than acceptance. This behavior follows from the competition illustrated in Fig.~\ref{fig:overview}: if a vessel response $m(x_v)$ exceeds a lesion response $m(x_\ell)$ and conditioning lowers them by $d_v$ and $d_\ell$, the lesion becomes the maximum when $d_v-d_\ell>m(x_v)-m(x_\ell)$, regardless of whether the crop decision changes.
+
+\paragraph{Robustness.}
+The localization gain does not depend on the choice of readout or on refitting. In a post hoc analysis, fixed subtraction compared with its own separately tuned rotation gains $+9.66\pp$ \ci{+8.24}{+11.38} in localized sensitivity on the broader set and $+2.39\pp$ \ci{+1.22}{+3.28} on HiPaS. Rotating only the field under the aligned classifier yields $+4.26\pp$ \ci{+2.39}{+5.83} and $+0.51\pp$ \ci{-0.15}{+1.09}, respectively.
+
+\subsection{Readout Flexibility and Learned Baselines}
+\label{sec:res_gain}
+Additional flexibility in the vessel amplitude did not improve performance. On the low-texture subset, the profile trailed the Hessian baseline by $0.84\pp$ \ci{-6.15}{+2.43}, whereas fixed subtraction exceeded it by $3.41\pp$ \ci{-0.23}{+6.05}. On the broader set, the profile trailed fixed subtraction by $0.74\pp$ \ci{-3.04}{+0.54} in crop sensitivity, and fixed subtraction localized $1.93\pp$ \ci{+1.05}{+3.27} more insertions (15.38\% of all insertions). On 18 development backgrounds with exact fields, where the forecast equals the added vessel, fixed subtraction and profiling both ordered 67.6\% of insertion/control pairs correctly, compared with 62.0\% for the plug-in readout. These results are consistent with the analysis in Sec.~\ref{sec:readout}: a gain estimated inside the core can absorb part of the lesion.
+
+The CT-only CNN reached 67.54\% development AUROC and 36.28\% sensitivity at the 10\% cap, comparable to the ridge classifier on the CT-only readout (68.08\% and 36.47\%). On the low-texture subset its aligned-minus-rotated difference was $-0.54\pp$ \ci{-2.80}{+0.62}, and the residual input changed sensitivity by $+2.16\pp$ \ci{-1.19}{+4.44} (Table~\ref{tab:learned}). The network is not under-trained: it fits small training sets almost perfectly, and its development AUROC increases with the number of fitting patients (Fig.~\ref{fig:learned}; Sec.~S6). A classifier that pools learned features can therefore use the same field without exploiting its placement; the placement gain is specific to a readout in which the field can suppress a competing peak.
+
+\begin{table}[t]
+\centering
+\input{tables/learned_onecol}
+\caption{\textbf{Hybrid CNN with four second inputs} (\%). Architecture, data, seeds and budget are identical; the epoch is selected on development. AUROC and sensitivity (10\% FPR cap) are reported on the low-texture subset, where the ridge classifier on the CT-only readout reaches 69.17\% and 32.88\%.}
+\label{tab:learned}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/learning.pdf}
+\caption{\textbf{Training behavior of the CT-only CNN.} (a)~AUROC versus the number of fitting patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the ridge classifier on development for reference. (b)~Training AUROC on four fitting patients for an easy setting (strong off-center lesions) and a hard setting (all insertion variants), the latter recorded up to 125 epochs.}
+\label{fig:learned}
+\end{figure*}
+
+\subsection{Analysis by Insertion Condition}
+\label{sec:conditions}
+Fig.~\ref{fig:strata} decomposes the paired crop-level gain by insertion condition, evaluated at each setting's global cutoff. Gains concentrate where a vessel is most likely to produce the search maximum, namely for displaced, high-contrast insertions, which gained $+15.40\pp$ \ci{+11.84}{+19.08} on the broader set. Centered insertions changed by $-5.34\pp$ \ci{-9.49}{-1.25} and the faintest insertions by $-1.47\pp$ \ci{-2.60}{-0.24}, while insertions overlapping a vessel by at least 50\% were unaffected ($-0.12\pp$ \ci{-3.59}{+3.23}). A centered lesion is often already the strongest response, and a faint lesion leaves a weak residual even when the vessel is well explained. The low-texture subset exhibits the same pattern with larger effects.
+
+We also evaluated a forecast-dominance score that is available before scoring, defined as the peak forecast relative to the texture of the shell (Sec.~S5). Crops in the upper half of this score, 40.7\% of the broader set, show a gain of $+3.29\pp$ \ci{+0.04}{+6.03}, but the high-minus-low interaction of $+2.03\pp$ \ci{-1.62}{+5.11} is not resolved. Within the high-dominance band, alignment also raises the frozen FPR (11.19\% \vs 9.39\%; Sec.~S5), so the score describes where alignment matters but does not by itself identify a better operating point.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/strata.pdf}
+\caption{\textbf{Placement gains by insertion condition.} Aligned minus rotated crop sensitivity at each setting's global 10\% FPR cap. Blue: fixed subtraction on the low-texture subset (development); green: the prespecified profile on the broader held-out set. Contrast values are given as low-texture\,/\,broader. Rows are not mutually exclusive.}
+\label{fig:strata}
+\end{figure}
+
+\subsection{Transfer to Native Vessels}
+\label{sec:native}
+On the 72 HiPaS scans, 7,713 of the 7,776 insertions lie within 2\,mm of an annotated artery or vein. At matched FPR, alignment improved localized sensitivity by $+2.76\pp$ \ci{+1.77}{+3.76} and crop sensitivity by $+1.36\pp$ \ci{-0.26}{+3.69}. The localization gain therefore persists when real anatomy, including curved vessels that a straight chord approximates poorly, supplies the competing response. Both aligned readouts localize roughly twice as many insertions as the rotation (Fig.~\ref{fig:native}a), with 284 insertions newly localized and 69 lost.
+
+\begin{table}[t]
+\centering
+\input{tables/transfer_onecol}
+\caption{\textbf{HiPaS native vessels} (432 controls, 7,776 insertions; \%). The matched columns use the within-HiPaS 10\% FPR cap; the last column applies the independent LUNA16 cutoffs. Controls contain native anatomy without an inserted target.}
+\label{tab:hipas}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/native_transfer.pdf}
+\caption{\textbf{Localization gains transfer to annotated native vessels; thresholds do not.}
+(a)~Localized sensitivity on 7,776 HiPaS insertions at the within-HiPaS 10\% FPR cap.
+(b)~Crop sensitivity and achieved FPR when the frozen LUNA16 cutoffs are applied unchanged (intervals conditional on the cutoffs). Colors follow Fig.~\ref{fig:localization}, with CT + shell in olive; diamonds denote localized sensitivity and open circles crop sensitivity at the frozen cutoffs, as in Fig.~\ref{fig:roc}.}
+\label{fig:native}
+\end{figure*}
+
+\subsection{Ranking versus Calibration}
+\label{sec:calibration}
+When applied unchanged to HiPaS, the LUNA16 cutoffs yielded 2.15\% sensitivity at 0.69\% FPR for the aligned profile, compared with 6.62\% at 4.63\% for its rotation (Fig.~\ref{fig:native}b). Most scorers accepted far fewer HiPaS controls than the nominal 10\%, so their realized operating points shifted. Fig.~\ref{fig:roc} shows the ROC curves underlying these operating points. On the broader set, both aligned readouts lie above the rotation and the CT-only scorer between approximately 3\% and 25\% FPR, so the matched result does not depend on the choice of a 10\% cap. On HiPaS the crop-level curves nearly coincide, and the gain is confined to localization. The frozen LUNA16 cutoffs (open circles) fall close to the 10\% cap on LUNA16 but far below it on HiPaS. Table~\ref{tab:cal} quantifies the contribution of calibration uncertainty: resampling the 175 calibration patients widens the broader lead-minus-rotation interval from $[+2.62,+6.32]$ to $[-0.59,+8.31]\pp$. On HiPaS the lead scorer accepts fewer insertions and fewer controls than its rotation, which reflects a shift of the operating point rather than a loss in ranking (Table~\ref{tab:hipas}).
+
+The same distinction appears in two additional transfer conditions of the low-texture design, a LUNA16 morphology shift and an independent LNDb acquisition with shifted insertions~\cite{pedrosa2021}. Neither met its full transfer criteria at frozen cutoffs (Table~\ref{tab:old}); on the low-texture subset itself, the upper limit on excess FPR relative to the CT-only scorer was $4.92\pp$ against a prespecified 4\,pp. Within each test set, however, the profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under the morphology shift and 33.15\% and 32.94\% on LNDb, so ranking transferred better than the cutoffs. On LNDb, adding the spatial features to the scores of a published detector changed mean FROC by $0.00\pp$ \ci{-0.21}{+0.23} relative to the full CT-only classifier and by $-0.13\pp$ \ci{-0.33}{+0.35} relative to the sham.
+
+\begin{table}[t]
+\centering
+\input{tables/calibration_onecol}
+\caption{\textbf{Paired differences at the frozen LUNA16 cutoffs} (pp, 95\% CI). Frozen intervals are conditional on the calibration set; recalibrated (recal.) intervals resample both calibration and evaluation blocks. The lead scorer is the aligned profile.}
+\label{tab:cal}
+\end{table}
+
+\begin{table}[t]
+\centering
+\input{tables/historical_onecol}
+\caption{\textbf{Frozen operating points of the low-texture design} (\%), using its own 276 LUNA16 calibration negatives, for the subset itself and two transfer conditions.}
+\label{tab:old}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/roc.pdf}
+\caption{\textbf{ROC curves and transferred thresholds.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile placements. Open circles mark the frozen LUNA16 cutoffs, applied unchanged in both domains.}
+\label{fig:roc}
+\end{figure*}

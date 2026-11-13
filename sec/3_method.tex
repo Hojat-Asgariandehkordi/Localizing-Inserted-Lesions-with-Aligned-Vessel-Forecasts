@@ -1,0 +1,80 @@
+\section{Method}
+\label{sec:method}
+\subsection{Problem Setup and Paired Insertions}
+\label{sec:design}
+Each input is a CT crop $y$ of $64^3$ voxels with spacing $1.5\times0.7\times0.7\mm$ (slice, row, column), centered on a candidate proposal $c$. We distinguish three nested regions: the search \emph{core} within $10\mm$ of $c$, the \emph{hidden ball} within $14\mm$, and the \emph{exterior} $E$ beyond $14\mm$, whose inner part between 15.5 and $19.5\mm$ we call the \emph{shell}. A scorer consists of a readout, which maps the crop to template scores, and a \emph{classifier} on top of them. It produces a crop decision $A(y)\in\{0,1\}$, which accepts the crop for review, and a location $L(y)$, the single point it returns.
+
+Let $b$ denote a CT background, $v$ an optional added vessel field, and $s$ an inserted lesion with $s=0$ on $E$. The control and lesion crops are
+\begin{equation}
+y_0=b+v,\qquad y_1=b+v+s .
+\label{eq:pair}
+\end{equation}
+For native-vessel backgrounds we set $v=0$, since the vessels are already part of $b$. Because $y_0$ and $y_1$ coincide on $E$, the forecast $f=F(y|_E)$ is identical for a control and all of its insertions. All scorers evaluate $y_0$ and $y_1$ at the same center $c$ and may use the entire crop; only the forecaster is restricted to $E$. A score can thus increase because a lesion is present, but not because the lesion altered the forecast.
+
+\paragraph{Placement sham and exterior-summary control.}
+Let $Q$ denote a $90^\circ$ rotation about the slice axis through $c$. Since the row and column spacings are equal, $Q$ permutes voxels without interpolation. The sham forecast $Qf$ preserves the radial profile, the multiset of values, the smoothness and the shape of $f$, but in general moves its vessels to locations without vascular anatomy. We refer to $f$ and $Qf$ as the \emph{aligned} and \emph{rotated} placements. Each aligned scorer is compared with (i)~the rotated placement with a refitted classifier, which allows the sham to make the best possible use of a misplaced field, and (ii)~the rotated placement evaluated with the aligned classifier, which removes any effect of refitting. A third control, denoted CT + shell, receives four summary statistics of the shell but no spatial field. Gains over all three controls are attributed to placement.
+
+\subsection{Exterior Vessel Forecast}
+\label{sec:forecast}
+The forecaster continues vessels whose entry and exit points are visible in the exterior. Peaks on a sphere of radius $15.5\mm$ propose pairs of entry and exit points, and a pair is retained if the signal continues against its transverse flanks at radii of $17.8$ and $20.4\mm$ on both sides. For each retained chord we fit a Gaussian cross-section, with width and gain, to the two exterior segments, interpolate width and amplitude along the chord, and taper the field smoothly beyond $22\mm$. The resulting forecast $f$ is an additive estimate in CT units; a crop without an accepted chord has $f=0$ and is processed by the same procedure. All forecaster constants are listed in Sec.~S1 of the supplement. We verify the shared-exterior property by confirming that the rotation preserves the value multiset of every control, that rerunning the forecaster after replacing the hidden region yields an identical field, and that the visible exteriors of every rendered pair agree bitwise. A straight chord is an approximation that curved paths and branches can violate; the native-vessel experiment in Sec.~\ref{sec:native} evaluates this case directly.
+
+\subsection{Forecast-Conditioned Readouts}
+\label{sec:readout}
+For each search center $x$ in the core, let $W_x$ be Gaussian weights ($\sigma=3.4\mm$) on a $6\mm$ ball with inner product $\ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p)$, and let $B$ span a constant and the three spatial coordinates within the window. Projecting the observation, the forecast and a compact template onto the $W_x$-orthogonal complement of $B$ gives
+\begin{equation}
+z=P_x y,\qquad u=P_x f,\qquad t=P_x T_{x,r},
+\end{equation}
+with templates $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$ and radii $r\in\{1.85,2.7,3.7\}\mm$. The projection removes the local background level and linear drift. We model the projected observation as
+\begin{equation}
+z\approx g\,u+h\,t,\qquad h\ge 0,
+\label{eq:model}
+\end{equation}
+where $g$ is the vessel gain and $h$ the lesion amplitude. In the absence of a lesion ($h=0$), the gain is estimated with a penalty toward the exterior value $g=1$,
+\begin{equation}
+J_0=\min_g \nrm{z-gu}^2+\lambda(g-1)^2,\qquad \lambda=\rho\nrm{u}^2 ,
+\label{eq:null}
+\end{equation}
+whose minimizer is $g_0=(\ip{u}{z}+\lambda)/G$ with $G=\nrm{u}^2+\lambda$.
+
+\paragraph{Treatment of the vessel gain.}
+Adding the lesion term reduces the loss by $[a]_+^2/d$, where $a$ is the correlation of the residual with the template and $d$ an effective template energy. The four readouts differ only in how $a$ and $d$ are formed. The \emph{CT-only} readout ignores the forecast ($u=0$), so that $a=\ip{t}{z}$ and $d=\nrm{t}^2$. \emph{Fixed subtraction} keeps the exterior gain $g=1$, giving $a=\ip{t}{z-u}$, $d=\nrm{t}^2$ and $J_0=\nrm{z-u}^2$. The \emph{plug-in} readout holds the no-lesion estimate $g_0$ fixed, so that $a=\ip{t}{z}-g_0\ip{t}{u}$ and $d=\nrm{t}^2$. Finally, the \emph{joint profile} (profile for short) fits $g$ and $h$ together; eliminating $g$ yields
+\begin{equation}
+J(h)=J_0-2ah+h^2 d_{\rm prof},\qquad d_{\rm prof}=\nrm{t}^2-\frac{\ip{t}{u}^2}{G},
+\label{eq:profile}
+\end{equation}
+with the same $a$ as the plug-in readout. Profile and plug-in coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<d$ and profiling assigns more weight to the same residual.
+
+The treatment of the gain matters most at the lesion itself. For $z=z_0+h_\star t$, the plug-in gain changes by $h_\star\ip{u}{t}/G$, so the plug-in correlation increases by only $h_\star(\nrm{t}^2-\ip{u}{t}^2/G)$, whereas the correlation under fixed subtraction increases by the full $h_\star\nrm{t}^2$. A gain estimated inside the core can thus absorb part of the lesion, while a fixed gain cannot but inherits any amplitude error of the exterior fit. For an empty forecast the four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
+
+\subsection{Scoring, Search and Classification}
+\label{sec:score}
+At each center and radius the normalized score is
+\begin{equation}
+m_r(x)=\frac{[a]_+/\sqrt{d}}{\sigma_0},\qquad \sigma_0=\sqrt{J_0/\textstyle\sum_p W_x(p)+\tau^2},
+\label{eq:score}
+\end{equation}
+\ie, the square root of the loss reduction scaled by the readout's own null residual with floor $\tau$. The per-radius maxima $\max_x m_r(x)$ are passed to a ridge-logistic classifier, and the overall maximizer over $x$ and $r$ defines the location $L(y)$ (Algorithm~\ref{alg:readout}). All classifiers share 12 local intensity and Hessian summaries, three template maxima from a larger window and three CT-only maxima. The CT + shell control adds its four shell summaries, and each forecast-conditioned readout adds its three conditioned maxima, so that fixed subtraction, plug-in and profile have identical feature counts and regularization budgets. Each readout is tuned over three coupled settings of the gain penalty $\rho$, the floor $\tau$ and the ridge strength (Sec.~S2).
+
+\begin{algorithm}[t]
+\caption{Forecast-conditioned candidate scoring}
+\label{alg:readout}
+\begin{algorithmic}[1]
+\small
+\Require crop $y$, center $c$, readout $\in\{$CT-only, fixed, plug-in, profile$\}$
+\State $f\gets F(y|_E)$ \Comment{forecast from voxels beyond 14\,mm}
+\For{centers $x$ within $10\mm$ of $c$, radii $r\in\{1.85,2.7,3.7\}\mm$}
+  \State $z,u,t\gets P_x y,\;P_x f,\;P_x T_{x,r}$ \Comment{affine residuals}
+  \State $J_0,g_0\gets$ no-lesion fit, Eq.~\eqref{eq:null} (fixed: $g=1$)
+  \State $a,d\gets$ correlation and energy for the readout
+  \State $m_r(x)\gets [a]_+\big/\big(\sqrt{d}\,\sigma_0\big)$ \Comment{Eq.~\eqref{eq:score}}
+\EndFor
+\State $\mathbf{q}\gets$ shared CT features $\oplus\,(\max_x m_r(x))_r$
+\State $A(y)\gets[\mathrm{logit}(\mathbf{q})>\kappa]$ \Comment{$\kappa$ at 10\% FPR}
+\State $L(y)\gets\arg\max_{x,r} m_r(x)$
+\State \Return $A(y),\,L(y)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Baselines}
+\label{sec:baselines}
+The Hessian baseline subtracts the same forecast at a strength of $0.35$, $0.7$ or $1.0$ before computing a standard compact-curvature statistic at Gaussian scales of 1.3, 2.5 and $4.0\mm$. It measures the contribution of a different readout when the nuisance estimate is held fixed. The learned baseline is a hybrid CNN with a small 3D feature extractor and a shared CT feature path, whose second input is either smoothed CT (the CT-only CNN), the aligned forecast, the rotated forecast or the residual $y-f$; architecture, data, seeds and training budget are identical across inputs (Sec.~S6).

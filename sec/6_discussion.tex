@@ -1,0 +1,10 @@
+\section{Discussion and Limitations}
+\label{sec:discussion}
+\paragraph{Implications for candidate scoring.}
+A vessel forecast can appear useful for several reasons, since its shape and amplitude correlate with the type of background in a crop. The rotation sham, the exterior-summary control and the shared readouts together isolate the contribution of its \emph{alignment}. Gains attributed to geometry should therefore be compared against a value-preserving placement sham, and fixed subtraction with the same search provides a competitive baseline for more flexible nuisance models. When a pipeline presents a returned location to a reader, moving that location onto the lesion is valuable even if the number of accepted crops barely changes; conversely, a gain in crop sensitivity can overstate the benefit when the returned location remains on the vessel.
+
+\paragraph{Operating points.}
+A matched-FPR effect establishes ranking separation at a given budget, whereas a shift in the negative score distribution changes the realized budget at an imported threshold. In our experiments, ranking gains from alignment transferred across acquisitions more reliably than calibrated cutoffs, and a deployment-oriented claim would require negatives from the target acquisition. A reliability-based rule for using the forecast selectively did not outperform always using it (Sec.~S6).
+
+\paragraph{Scope.}
+All positive targets are inserted signals. The broader set varies texture and morphology under a known intervention, and HiPaS adds an independently annotated native background. Real nodules, scan-level proposal pipelines, partial-volume effects and per-scan false-positive rates are beyond the scope of this study, and an adjudicated scan-level evaluation would be required to quantify clinical detection performance.

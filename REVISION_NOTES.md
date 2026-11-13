@@ -107,3 +107,13 @@ The same reviewer then checked the revised figures. All but one of the remaining
 - **New Related Work paragraph** on lesion insertion, with two verified references: Robins et al., PMB 2017; Gong et al., SPIE 2021.
 - An independent CVPR-style audit of the writing guided this pass.
 - **One reviewer suggestion not adopted:** cutting back to 8 pages. The group asked for more than 8 pages.
+
+## Official CVPR 2027 author kit
+The source now follows `author-kit-CVPR2027-v1-latex` exactly:
+- `cvpr.sty` and `ieeenat_fullname.bst` are byte-identical to the kit (checked with `cmp`).
+- `main.tex` is the kit's `main.tex`. Only the title, the anonymous author block (plus empty PDF author metadata) and the `\input{sec/...}` lines differ.
+- `preamble.tex` is the kit's `preamble.tex`. It enables the kit's optional `microtype` line and appends this paper's packages and macros, all loaded before hyperref as the kit requires.
+- The text is split the kit's way: `sec/0_abstract.tex` … `sec/7_conclusion.tex`. The bibliography is `main.bib` (renamed from `references.bib`).
+- The supplement is the kit's `sec/X_suppl.tex` (`\maketitlesupplementary`, page counter reset). `supplement.tex` is a small wrapper with the same preamble, so it still compiles on its own. It can also be appended to the main paper by uncommenting the kit's `% \input{sec/X_suppl}` line. The kit's `rebuttal.tex` is included for the rebuttal phase.
+- `\raggedbottom` was removed so page layout follows the template defaults.
+- A script confirmed that the paper text is identical to the previous version.
