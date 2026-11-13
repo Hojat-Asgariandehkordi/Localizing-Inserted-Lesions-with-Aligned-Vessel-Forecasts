@@ -57,12 +57,13 @@ def save(fig, name):
 
 # ---------------------------------------------------------------- Fig. 2 placement
 def fig_placement():
-    fig = plt.figure(figsize=(style.TXT_W, 1.8))
+    """One-column: three CT crops on top, paired effects below."""
+    W = style.COL_W
+    fig = plt.figure(figsize=(W, 3.2))
     P = D.PLACEMENT_PANELS
-    w, h0 = 0.128, 0.2
-    hgt = w * style.TXT_W / 1.8
+    w = 0.305; gap = 0.0225; hgt = w * W / 3.2; top = 0.885 - hgt
     for i, key in enumerate(["control", "aligned", "rotated"]):
-        ax = fig.add_axes([0.0 + i * (w + 0.008), h0, w, hgt])
+        ax = fig.add_axes([0.0 + i * (w + gap), top, w, hgt])
         im = np.asarray(Image.open(ASSET / f"crop_{key}.png").convert("L"))
         ax.imshow(im, cmap="gray", extent=[0, 1, 0, 1], vmin=0, vmax=255)
         ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
@@ -73,78 +74,77 @@ def fig_placement():
         col = {"aligned": C["profile_aligned"], "rotated": C["profile_rotated"]}.get(key)
         for cpts in P[key]["contours"]:
             a = np.array(cpts)
-            ax.plot(a[:, 0], a[:, 1], color="white", lw=2.0)
-            ax.plot(a[:, 0], a[:, 1], color=col, lw=1.1)
+            ax.plot(a[:, 0], a[:, 1], color="white", lw=1.8)
+            ax.plot(a[:, 0], a[:, 1], color=col, lw=1.0)
         if P[key]["cross"]:
             ax.add_patch(plt.Circle(P[key]["cross"], 0.09, fill=False, lw=1.0, color="#f2c14e"))
         if "scalebar" in P[key]:
             sb = np.array(P[key]["scalebar"]); L = sb[:, 0].max() - sb[:, 0].min()
-            ax.plot([0.04, 0.04 + L], [0.95, 0.95], color="white", lw=1.4, zorder=6)
-            ax.text(0.04 + L / 2, 0.92, "5 mm", color="white", fontsize=6.8, ha="center", va="top", zorder=6,
+            ax.plot([0.05, 0.05 + L], [0.93, 0.93], color="white", lw=1.3, zorder=6)
+            ax.text(0.05 + L / 2, 0.89, "5 mm", color="white", fontsize=6.5, ha="center", va="top", zorder=6,
                     bbox=dict(boxstyle="round,pad=0.1", fc="#1b2a33", ec="none", alpha=0.6))
         ax.set_xlim(0, 1); ax.set_ylim(0, 1)
-        name = {"control": "Control (no lesion)", "aligned": "Lesion, aligned $f$", "rotated": "Lesion, rotated $f$"}[key]
-        ax.set_title(name, fontsize=8, pad=2.5, color=col or C["ink"])
-    fig.text(0.0, 0.975, r"$\bf(a)$ Same exterior, forecast aligned vs rotated", fontsize=8.5, va="top")
-    fig.text(0.0, 0.035, "thin white circle: 14-mm mask    gold ring: inserted lesion    outline: forecast $f$",
-             fontsize=7, color=C["muted"])
+        name = {"control": "control", "aligned": "lesion, aligned $f$", "rotated": "lesion, rotated $f$"}[key]
+        ax.set_title(name, fontsize=7.4, pad=2, color=col or C["ink"])
+    fig.text(0.0, 0.995, r"$\bf(a)$ Same exterior, aligned vs rotated forecast", fontsize=8, va="top")
 
-    ax = fig.add_axes([0.63, 0.22, 0.3, 0.64])
-    rows = [("Low-texture, profile, crop", *D.PLACEMENT_EFFECT[0][1:4], "crop"),
-            ("Broader, profile, localized", *D.PLACEMENT_EFFECT[1][1:4], "localized"),
-            ("Broader, profile, crop", *D.PLACEMENT_CROP[0][1:4], "crop"),
-            ("HiPaS, profile, localized", *D.PLACEMENT_EFFECT[2][1:4], "localized"),
-            ("HiPaS, profile, crop", *D.PLACEMENT_CROP[1][1:4], "crop")]
-    ys = [4.6, 3.0, 2.35, 0.75, 0.1]
+    ax = fig.add_axes([0.43, 0.12, 0.42, top - 0.21])
+    rows = [("Low-texture, crop", *D.PLACEMENT_EFFECT[0][1:4], "crop"),
+            ("Broader, localized", *D.PLACEMENT_EFFECT[1][1:4], "localized"),
+            ("Broader, crop", *D.PLACEMENT_CROP[0][1:4], "crop"),
+            ("HiPaS, localized", *D.PLACEMENT_EFFECT[2][1:4], "localized"),
+            ("HiPaS, crop", *D.PLACEMENT_CROP[1][1:4], "crop")]
+    ys = [4.5, 3.0, 2.3, 0.8, 0.1]
     for (txt, est, lo, hi, ep), y in zip(rows, ys):
         ci(ax, y, est, lo, hi, C["profile_aligned"], marker=EP[ep])
-        ax.text(-4.6, y, txt, ha="right", va="center", fontsize=7.5, color=C["ink"])
-        ax.text(14.2, y, f"{est:+.2f}", ha="left", va="center", fontsize=7.5, color=C["profile_aligned"],
+        ax.text(-4.6, y, txt, ha="right", va="center", fontsize=7.2, color=C["ink"])
+        ax.text(13.4, y, f"{est:+.2f}", ha="left", va="center", fontsize=7.2, color=C["profile_aligned"],
                 fontweight="bold" if lo > 0 else "normal")
     zero_line(ax)
-    ax.set_xlim(-4, 14); ax.set_xticks([-4, 0, 4, 8, 12]); ax.set_ylim(-0.5, 5.2); ax.set_yticks([])
+    ax.set_xlim(-4, 13); ax.set_xticks([-4, 0, 4, 8, 12]); ax.set_ylim(-0.5, 5.1); ax.set_yticks([])
     ax.spines["left"].set_visible(False); ax.grid(axis="y", visible=False)
-    ax.set_xlabel("Aligned $-$ rotated sensitivity " + CI_LAB)
-    fig.text(0.445, 0.975, r"$\bf(b)$ Paired effect of alignment at 10% FPR", fontsize=8.5, va="top")
+    ax.set_xlabel("Aligned $-$ rotated sensitivity (pp, 95% CI)", fontsize=7.6)
+    fig.text(0.0, top - 0.035, r"$\bf(b)$ Paired effect of alignment (profile readout, 10% FPR)", fontsize=8, va="top")
     save(fig, "placement")
 
 
 # ---------------------------------------------------------------- Fig. 3 localization
 def fig_localization():
-    fig, (a, b) = plt.subplots(1, 2, figsize=(style.TXT_W, 1.9), layout="constrained",
-                               gridspec_kw=dict(width_ratios=[1.05, 1]))
+    """One-column: (a) composition of accepted crops, (b) paired differences."""
+    fig, (a, b) = plt.subplots(2, 1, figsize=(style.COL_W, 3.45), layout="constrained",
+                               gridspec_kw=dict(height_ratios=[1, 1.05]))
     for i, (k, crop, loc) in enumerate(D.BROAD_ACCEPT):
         y = len(D.BROAD_ACCEPT) - 1 - i
         a.barh(y, loc, color=C[k], height=0.62, zorder=2)
         a.barh(y, crop - loc, left=loc, color=C[k], alpha=0.28, height=0.62, zorder=2)
-        a.text(loc - 0.4, y, f"{loc + 1e-9:.1f}", color="white", ha="right", va="center", fontsize=7.2)
-        a.text(crop + 0.4, y, f"{crop + 1e-9:.1f}", color=C["ink"], ha="left", va="center", fontsize=7.2)
+        a.text(loc - 0.4, y, f"{loc + 1e-9:.1f}", color="white", ha="right", va="center", fontsize=7)
+        a.text(crop + 0.4, y, f"{crop + 1e-9:.1f}", color=C["ink"], ha="left", va="center", fontsize=7)
     a.set_yticks(range(4)); a.set_yticklabels([LABEL[k] for k, *_ in D.BROAD_ACCEPT][::-1])
     for t, (k, *_) in zip(a.get_yticklabels(), D.BROAD_ACCEPT[::-1]):
         t.set_color(C[k])
     a.tick_params(axis="y", length=0); a.grid(axis="y", visible=False)
     a.set_xlim(0, 30); a.set_xlabel("Lesion crops accepted (%)")
-    a.set_ylim(-0.6, 4.65)
+    a.set_ylim(-0.6, 4.75)
     a.legend(handles=[Patch(color=C["muted"]), Patch(color=C["muted"], alpha=0.28)],
-             labels=["mark within 3 mm (localized)", "mark elsewhere; bar end = crop sens."],
-             loc="upper center", bbox_to_anchor=(0.45, 1.0), ncol=2, fontsize=6.8, handlelength=1.0,
+             labels=["location within 3 mm", "elsewhere (bar end = crop sens.)"],
+             loc="upper left", bbox_to_anchor=(0.0, 1.02), ncol=2, fontsize=6.6, handlelength=1.0,
              columnspacing=0.8, frameon=True, framealpha=1.0, edgecolor="none", facecolor="white")
-    a.set_title(r"$\bf(a)$ Where accepted lesion crops are marked", loc="left")
+    a.set_title(r"$\bf(a)$ Where accepted lesion crops are marked", loc="left", fontsize=8)
 
     for i, (cmp, ep, est, lo, hi, _) in enumerate(D.BROAD_PAIRED):
         y = [3.3, 2.7, 1.0, 0.4][i]
         col = C["profile_aligned"] if cmp.startswith("Profile") else C["fixed_aligned"]
         ci(b, y, est, lo, hi, col, marker=EP[ep])
-        b.text(hi + 0.3, y, f"{est:+.2f} [{lo:+.2f}, {hi:+.2f}]", fontsize=6.8, va="center", color=col)
-    b.grid(False); zero_line(b); b.set_ylim(-0.1, 4.2)
-    b.set_yticks([3.0, 0.7]); b.set_yticklabels(["Profile:\naligned $-$ rotated", "Aligned:\nfixed $-$ profile"], fontsize=7.4)
+        b.text(hi + 0.3, y, f"{est:+.2f} [{lo:+.2f}, {hi:+.2f}]", fontsize=6.6, va="center", color=col)
+    b.grid(False); zero_line(b); b.set_ylim(-0.1, 4.25)
+    b.set_yticks([3.0, 0.7]); b.set_yticklabels(["Profile:\naligned $-$ rotated", "Aligned:\nfixed $-$ profile"], fontsize=7.2)
     for t, col in zip(b.get_yticklabels(), [C["profile_aligned"], C["fixed_aligned"]]):
         t.set_color(col)
     b.tick_params(axis="y", length=0); b.spines["left"].set_visible(False)
-    b.grid(axis="y", visible=False); b.set_xlim(-3.2, 14.5); b.set_xticks([-2, 0, 2, 4, 6, 8])
+    b.set_xlim(-3.2, 15.5); b.set_xticks([-2, 0, 2, 4, 6, 8])
     b.set_xlabel("Paired difference " + CI_LAB)
-    ep_legend(b, loc="upper right", fontsize=6.8, ncol=2, bbox_to_anchor=(1.02, 1.04), handletextpad=0.2, columnspacing=0.8)
-    b.set_title(r"$\bf(b)$ Paired change at the same 10% FPR", loc="left")
+    ep_legend(b, loc="upper right", fontsize=6.6, ncol=2, bbox_to_anchor=(1.02, 1.06), handletextpad=0.2, columnspacing=0.8)
+    b.set_title(r"$\bf(b)$ Paired change at the same 10% FPR", loc="left", fontsize=8)
     save(fig, "localization")
 
 
@@ -218,7 +218,8 @@ def fig_native():
 
 # ---------------------------------------------------------------- Fig. 6 ROC
 def fig_roc():
-    fig, axs = plt.subplots(1, 2, figsize=(style.TXT_W, 2.35), sharey=True, layout="constrained")
+    """One-column, two stacked panels; annotation arrows in dark ink (not a data colour)."""
+    fig, axs = plt.subplots(2, 1, figsize=(style.COL_W, 3.9), sharex=True, layout="constrained")
     ls = {"fixed_aligned": "-", "profile_aligned": "-", "profile_rotated": (0, (4, 2)), "ct_only": (0, (1, 1.5))}
     for ax, key, title in zip(axs, ["broad", "hipas"], [r"$\bf(a)$ Broader LUNA16 held-out set", r"$\bf(b)$ HiPaS native vessels"]):
         R = D.ROC[key]
@@ -229,17 +230,19 @@ def fig_roc():
         for k, p in R["calibrated"].items():
             ax.plot(p["fpr"], p["sens"], marker="o", mfc="white", mec=C[k], ms=4.4, mew=1.2, ls="none", zorder=4)
         ax.axvline(10, color=C["axis"], lw=0.8)
-        ax.text(10.4, 43.5, "10% cap", fontsize=7, color=C["muted"], va="top")
-        ax.set_xlim(0, 25); ax.set_ylim(0, 45)
-        ax.set_xlabel("Candidate FPR (%)")
-        ax.set_title(title, loc="left")
-    axs[0].set_ylabel("Crop sensitivity (%)")
-    axs[1].annotate("frozen LUNA16 cutoffs of the aligned\nreadouts fall below 1% FPR here", xy=(1.0, 2.0), xytext=(12.5, 3.0),
-                    fontsize=6.8, arrowprops=dict(arrowstyle="-", lw=0.6, color=C["muted"]))
+        ax.text(10.4, 43, "10% cap", fontsize=6.8, color=C["muted"], va="top")
+        ax.set_xlim(0, 25); ax.set_ylim(0, 45); ax.set_ylabel("Crop sensitivity (%)")
+        ax.set_title(title, loc="left", fontsize=8)
+    axs[1].set_xlabel("Candidate FPR (%)")
+    axs[1].annotate("frozen LUNA16 cutoffs of the\naligned readouts: <1% FPR", xy=(1.0, 2.1), xytext=(13.0, 4.0),
+                    fontsize=6.8, color="#1b2a33", va="center",
+                    arrowprops=dict(arrowstyle="-|>", lw=0.8, color="#1b2a33", mutation_scale=7,
+                                    shrinkA=2, shrinkB=3))
     h, l = axs[0].get_legend_handles_labels()
     h += [Line2D([], [], marker="o", mfc="white", mec=C["muted"], ls="none", ms=4.5)]
-    l += ["frozen LUNA16 cutoff (colour = readout)"]
-    fig.legend(h, l, loc="outside lower center", ncol=5, fontsize=7, handlelength=1.8)
+    l += ["frozen LUNA16 cutoff"]
+    axs[0].legend(h, l, loc="lower right", ncol=1, fontsize=6.6, handlelength=1.8, frameon=True, framealpha=1.0,
+                  edgecolor="none", facecolor="white")
     save(fig, "roc")
 
 

@@ -1,7 +1,7 @@
 \section{Experimental Setup}
 \label{sec:protocol}
 \subsection{Datasets}
-We evaluate on three settings derived from LUNA16~\cite{setio2017,armato2011} and HiPaS~\cite{chu2025hipas}, summarized in Table~\ref{tab:roles}. In each setting a \emph{block} is a patient (LUNA16) or a scan (HiPaS), and every control crop is paired with a bank of 18 insertions that vary lesion shape, contrast and offset.
+We evaluate on three settings derived from LUNA16~\cite{setio2017,armato2011} and HiPaS~\cite{chu2025hipas}, whose fitting, development, calibration and test roles are listed in Table~S1 of the supplement. In each setting a \emph{block} is a patient (LUNA16) or a scan (HiPaS), and every control crop is paired with a bank of 18 insertions that vary lesion shape, contrast and offset.
 
 \paragraph{Low-texture LUNA16 subset.}
 This subset comprises 549 neighborhoods from 183 patients, each with a single, crossing or skew added vessel. The core intensity standard deviation is capped at $42\hu$ to isolate cases in which vessels compete strongly with the lesion, and the lesions are compact radially symmetric signals. Thresholds and the analysis for this subset were fixed before testing. Because these cases also informed the design of the shared readouts, we treat readout comparisons on them as development results.
@@ -12,12 +12,6 @@ The held-out set uses 170 patients disjoint from all fitting, development and ca
 \paragraph{HiPaS native vessels.}
 The native-vessel set consists of 72 noncontrast scans from a different source with manual artery and vein annotations. Six neighborhoods per scan are centered between nearby annotated arteries and veins, yielding 432 controls and 7,776 insertions without added vessels (median core SD $253\hu$). The annotations define only the sampling population and the analysis strata; the scorer observes the image alone.
 
-\begin{table}[t]
-\centering
-\input{tables/roles_onecol}
-\caption{\textbf{Cohorts.} Blocks are LUNA16 patients or HiPaS scans. Each control contributes one negative decision and is paired with 18 insertions.}
-\label{tab:roles}
-\end{table}
 
 \subsection{Model Selection and Evaluation}
 \paragraph{Prespecified analysis.}

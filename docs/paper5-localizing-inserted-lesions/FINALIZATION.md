@@ -61,3 +61,18 @@ The most decisive next study would be a new prespecified held-out evaluation wit
 - Adding returned-location markers to Fig. 2(a). These data are not in the V6 materials.
 
 **Status.** Expanded working draft (about 9 pages of text). It has not been checked against the 8-page submission limit.
+
+## Cross-paper comments (applied 2026-11-13)
+| Comment | Applied to paper 5 |
+|---|---|
+| Abstract: less technical, one message | Rewritten in plain language around the message "placement changes where the detector looks"; one headline number (about 6 per 100 insertions). |
+| Contributions as connected sentences | Already a connected paragraph ("Our paper offers the following contributions…"). |
+| Literature review | Present (two connected paragraphs); kept. |
+| Toy example at end of intro | Added: a two-location example (vessel 1.0 vs lesion 0.8) showing the location moving with no change in the crop decision, plus the general condition $d_v-d_\ell>m(x_v)-m(x_\ell)$. |
+| Variables defined before formulas; expand the math | Sec. 3.3 rewritten: $W_x$, the inner product and norm, $B$ and $P_x$ (explicit formula), $[\cdot]_+$, $\rho$, $\lambda$, $G$, $\tau$ all defined before use. Added: closed form for $g_0$, the 1-D nonnegative least-squares step $\Delta J=[a]_+^2/d$, a side-by-side table of $a$ and $d$ for the four readouts, the derivation of the profile loss via $g(h)$, the absorption inequality, and a motivation for the score normalization. All derivations were checked by hand. |
+| Formulas within column width | Profile equation split onto two lines; no overfull boxes. |
+| Tables hold results only | Cohort table (text inventory) moved to Supplement Table S1; the text keeps the numbers. |
+| Fig. 2 one column, visible error bars, matching fonts | Placement figure is now one column (crops above, forest plot with capped CIs below), in Times. |
+| Figs. 3/4 one column; no text over points; arrow colour | Localization and ROC figures are now one column (stacked panels). The ROC callout arrow is dark ink, not a data colour. The strata figure was already one column. |
+| Conclusion reflecting the intro, shortcomings, future directions | Discussion and Conclusion are separate again. The Conclusion answers the research question, lists the shortcomings (inserted lesions, failed primary criterion, post hoc robustness, modest absolute sensitivity, calibration transfer), and gives five directions: scan-level real-nodule study, learned scorers with explicit aligned subtraction, curved forecasts, target-domain calibration, placement shams as a general control. |
+| Fig. 1 a+b one column; Heun substep | Not applicable. Fig. 1 is a five-step graphical abstract that needs full width, and there is no Heun solver in this paper. |

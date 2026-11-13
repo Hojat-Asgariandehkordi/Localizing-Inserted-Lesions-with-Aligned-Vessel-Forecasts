@@ -20,40 +20,82 @@ The forecaster continues vessels whose entry and exit points are visible in the 
 
 \subsection{Forecast-Conditioned Readouts}
 \label{sec:readout}
-For each search center $x$ in the core, let $W_x$ be Gaussian weights ($\sigma=3.4\mm$) on a $6\mm$ ball with inner product $\ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p)$, and let $B$ span a constant and the three spatial coordinates within the window. Projecting the observation, the forecast and a compact template onto the $W_x$-orthogonal complement of $B$ gives
+A readout tests, at every candidate location in the core, whether the crop contains a compact bright signal beyond what the forecast explains. We first fix the local quantities it operates on.
+
+\paragraph{Local windows and projections.}
+For a search center $x$ in the core, let $W_x(p)=\exp(-\|p-x\|^2/2\sigma_W^2)$ for voxels $p$ with $\|p-x\|\le6\mm$ and $W_x(p)=0$ otherwise, with $\sigma_W=3.4\mm$. These weights define a local inner product and norm,
+\begin{equation}
+\ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p),\qquad \nrm{a}^2=\ip{a}{a},
+\end{equation}
+for any two volumes $a,b$. Let $B$ be the matrix whose four columns are a constant and the three spatial coordinates of the window, and let
+\begin{equation}
+P_x a = a-B\,(B^\top W_x B)^{-1}B^\top W_x\,a
+\label{eq:proj}
+\end{equation}
+be the $W_x$-weighted projection onto the orthogonal complement of $B$, which removes the local background level and any linear intensity drift. A lesion of radius $r$ is represented by the compact template $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$, where $[\,\cdot\,]_+=\max(\cdot,0)$ and $r\in\{1.85,2.7,3.7\}\mm$. Applying the projection to the observation, the forecast and the template yields the three local quantities
 \begin{equation}
 z=P_x y,\qquad u=P_x f,\qquad t=P_x T_{x,r},
 \end{equation}
-with templates $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$ and radii $r\in\{1.85,2.7,3.7\}\mm$. The projection removes the local background level and linear drift. We model the projected observation as
+which we model as
 \begin{equation}
-z\approx g\,u+h\,t,\qquad h\ge 0,
+z\approx g\,u+h\,t,\qquad h\ge 0 .
 \label{eq:model}
 \end{equation}
-where $g$ is the vessel gain and $h$ the lesion amplitude. In the absence of a lesion ($h=0$), the gain is estimated with a penalty toward the exterior value $g=1$,
+Here the vessel gain $g$ scales the forecast and the lesion amplitude $h$ scales the template; $h$ is constrained to be nonnegative because lesions are brighter than the parenchyma.
+
+\paragraph{The no-lesion fit.}
+The exterior fit already estimates the vessel amplitude, which corresponds to $g=1$. Under the null hypothesis $h=0$ we therefore allow $g$ to deviate from $1$ only at a cost. With a penalty weight $\rho>0$ and $\lambda=\rho\nrm{u}^2$, which makes the penalty scale with the forecast energy, the null loss is
 \begin{equation}
-J_0=\min_g \nrm{z-gu}^2+\lambda(g-1)^2,\qquad \lambda=\rho\nrm{u}^2 ,
+J_0=\min_g\ \nrm{z-gu}^2+\lambda(g-1)^2 .
 \label{eq:null}
 \end{equation}
-whose minimizer is $g_0=(\ip{u}{z}+\lambda)/G$ with $G=\nrm{u}^2+\lambda$.
-
-\paragraph{Treatment of the vessel gain.}
-Adding the lesion term reduces the loss by $[a]_+^2/d$, where $a$ is the correlation of the residual with the template and $d$ an effective template energy. The four readouts differ only in how $a$ and $d$ are formed. The \emph{CT-only} readout ignores the forecast ($u=0$), so that $a=\ip{t}{z}$ and $d=\nrm{t}^2$. \emph{Fixed subtraction} keeps the exterior gain $g=1$, giving $a=\ip{t}{z-u}$, $d=\nrm{t}^2$ and $J_0=\nrm{z-u}^2$. The \emph{plug-in} readout holds the no-lesion estimate $g_0$ fixed, so that $a=\ip{t}{z}-g_0\ip{t}{u}$ and $d=\nrm{t}^2$. Finally, the \emph{joint profile} (profile for short) fits $g$ and $h$ together; eliminating $g$ yields
+Setting the derivative with respect to $g$ to zero gives the closed-form minimizer
 \begin{equation}
-J(h)=J_0-2ah+h^2 d_{\rm prof},\qquad d_{\rm prof}=\nrm{t}^2-\frac{\ip{t}{u}^2}{G},
+g_0=\frac{\ip{u}{z}+\lambda}{G},\qquad G=\nrm{u}^2+\lambda ,
+\end{equation}
+which interpolates between the least-squares gain $\ip{u}{z}/\nrm{u}^2$ (small $\rho$) and the exterior gain $1$ (large $\rho$).
+
+\paragraph{Adding the lesion term.}
+For any fixed choice of gain, adding the term $h\,t$ is a one-dimensional nonnegative least-squares problem. Its loss is a quadratic $J(h)=J_0-2ah+h^2d$ whose minimizer over $h\ge0$ is $h^\star=[a]_+/d$, so that the loss decreases by
+\begin{equation}
+\Delta J=J_0-J(h^\star)=\frac{[a]_+^2}{d}.
+\label{eq:reduction}
+\end{equation}
+The correlation $a$ measures how well the template matches the part of $z$ not explained by the vessel, and $d$ is the effective energy of the template. The four readouts differ only in how they treat the gain and therefore in $a$ and $d$:
+\begin{equation}
+\begin{aligned}
+&\text{CT-only:} && a=\ip{t}{z}, && d=\nrm{t}^2,\\
+&\text{Fixed:} && a=\ip{t}{z-u}, && d=\nrm{t}^2,\\
+&\text{Plug-in:} && a=\ip{t}{z}-g_0\ip{t}{u}, && d=\nrm{t}^2,\\
+&\text{Profile:} && a=\ip{t}{z}-g_0\ip{t}{u}, && d=d_{\rm prof}.
+\end{aligned}
+\label{eq:readouts}
+\end{equation}
+The CT-only readout ignores the forecast ($u=0$). Fixed subtraction keeps the exterior gain $g=1$, so its null loss is $J_0=\nrm{z-u}^2$. The plug-in readout holds the null estimate $g_0$ fixed. The joint profile (profile for short) instead minimizes $\nrm{z-gu-ht}^2+\lambda(g-1)^2$ over $g$ and $h$ together. For fixed $h$ the optimal gain is $g(h)=g_0-h\ip{u}{t}/G$, and substituting it back yields
+\begin{equation}
+\begin{aligned}
+J(h)&=J_0-2ah+h^2d_{\rm prof},\\
+d_{\rm prof}&=\nrm{t}^2-\ip{t}{u}^2/G,
+\end{aligned}
 \label{eq:profile}
 \end{equation}
-with the same $a$ as the plug-in readout. Profile and plug-in coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<d$ and profiling assigns more weight to the same residual.
+with the same $a$ as the plug-in readout. Profile and plug-in therefore coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<\nrm{t}^2$ and profiling assigns more weight to the same residual.
 
-The treatment of the gain matters most at the lesion itself. For $z=z_0+h_\star t$, the plug-in gain changes by $h_\star\ip{u}{t}/G$, so the plug-in correlation increases by only $h_\star(\nrm{t}^2-\ip{u}{t}^2/G)$, whereas the correlation under fixed subtraction increases by the full $h_\star\nrm{t}^2$. A gain estimated inside the core can thus absorb part of the lesion, while a fixed gain cannot but inherits any amplitude error of the exterior fit. For an empty forecast the four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
+\paragraph{Why the gain treatment matters at the lesion.}
+Suppose the crop contains a lesion that matches the template, $z=z_0+h_\star t$ with $h_\star>0$. Because $g_0$ is fitted on the full window, it changes to $g_0+h_\star\ip{u}{t}/G$, and the plug-in correlation grows by only
+\begin{equation}
+h_\star\Bigl(\nrm{t}^2-\frac{\ip{u}{t}^2}{G}\Bigr)\ \le\ h_\star\nrm{t}^2 ,
+\label{eq:absorb}
+\end{equation}
+whereas the correlation under fixed subtraction grows by the full $h_\star\nrm{t}^2$. A gain estimated inside the core can thus absorb part of the lesion whenever forecast and template overlap, while a fixed gain cannot absorb it but inherits any amplitude error of the exterior fit. For an empty forecast ($u=0$) all four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
 
 \subsection{Scoring, Search and Classification}
 \label{sec:score}
-At each center and radius the normalized score is
+Loss reductions at different locations are not directly comparable, because the residual energy varies with local texture. We therefore normalize the square root of Eq.~\eqref{eq:reduction} by the root-mean-square null residual of the window, $\sqrt{J_0/\sum_pW_x(p)}$, combined with a floor $\tau>0$ that prevents division by near-zero residuals in very smooth regions. At each center $x$ and radius $r$ this gives the normalized score
 \begin{equation}
-m_r(x)=\frac{[a]_+/\sqrt{d}}{\sigma_0},\qquad \sigma_0=\sqrt{J_0/\textstyle\sum_p W_x(p)+\tau^2},
+m_r(x)=\frac{[a]_+}{\sqrt{d}\,\sigma_0},\qquad \sigma_0=\sqrt{\frac{J_0}{\sum_p W_x(p)}+\tau^2}.
 \label{eq:score}
-\end{equation}
-\ie, the square root of the loss reduction scaled by the readout's own null residual with floor $\tau$. The per-radius maxima $\max_x m_r(x)$ are passed to a ridge-logistic classifier, and the overall maximizer over $x$ and $r$ defines the location $L(y)$ (Algorithm~\ref{alg:readout}). All classifiers share 12 local intensity and Hessian summaries, three template maxima from a larger window and three CT-only maxima. The CT + shell control adds its four shell summaries, and each forecast-conditioned readout adds its three conditioned maxima, so that fixed subtraction, plug-in and profile have identical feature counts and regularization budgets. Each readout is tuned over three coupled settings of the gain penalty $\rho$, the floor $\tau$ and the ridge strength (Sec.~S2).
+\end{equation} The per-radius maxima $\max_x m_r(x)$ are passed to a ridge-logistic classifier, and the overall maximizer over $x$ and $r$ defines the location $L(y)$ (Algorithm~\ref{alg:readout}). All classifiers share 12 local intensity and Hessian summaries, three template maxima from a larger window and three CT-only maxima. The CT + shell control adds its four shell summaries, and each forecast-conditioned readout adds its three conditioned maxima, so that fixed subtraction, plug-in and profile have identical feature counts and regularization budgets. Each readout is tuned over three coupled settings of the gain penalty $\rho$, the floor $\tau$ and the ridge strength (Sec.~S2).
 
 \begin{algorithm}[t]
 \caption{Forecast-conditioned candidate scoring}

@@ -1,14 +1,15 @@
 \section{Results}
 \label{sec:results}
+Our experiments address three questions that follow from the toy example in Sec.~\ref{sec:intro}: whether a correctly placed forecast changes the scorer's decisions on held-out data, whether it changes the crop decision or the returned location, and which readout and which insertion conditions realize the effect. We then test whether the effect survives the move to native vessels and to thresholds calibrated on another acquisition.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/placement.pdf}
+\includegraphics[width=\columnwidth]{figures/placement.pdf}
 \caption{\textbf{The same forecast helps only when it is correctly placed.}
 (a)~Development example showing the control (left) and its lesion-bearing counterpart with the aligned (middle) and rotated (right) forecast outline. The thin white circle is the 14-mm mask and the gold ring the inserted lesion; the control already exhibits a compact vessel response near the insertion site. All panels share one display window, and returned locations are not shown.
 (b)~Aligned minus rotated sensitivity of the profile readout at the matched 10\% FPR. Circles denote crop sensitivity and diamonds localized sensitivity; bold values indicate intervals that exclude zero. In all figures, intervals are 95\% paired block-bootstrap CIs (3,000 draws of patients, or scans for HiPaS).}
 \label{fig:placement}
-\end{figure*}
+\end{figure}
 
 \begin{table}[t]
 \centering
@@ -24,18 +25,18 @@ We first ask whether the aligned forecast improves the prespecified scorer on th
 
 The low-texture subset, where vessels compete most strongly with the lesion, shows the placement effect already at the crop level. There the aligned profile outperformed its rotation by $+9.66\pp$ \ci{+8.10}{+11.19} at frozen cutoffs (achieved FPR 10.38\% \vs 10.02\%) and by $+9.37\pp$ \ci{+4.56}{+12.29} at matched FPR (Fig.~\ref{fig:placement}b). Under the shared readouts, fixed subtraction gained $+14.72\pp$ \ci{+11.11}{+17.05} over its rotation and $+14.15\pp$ \ci{+10.73}{+16.44} over the CT + shell control, gaining 2,001 and losing 546 positive decisions relative to the rotation (Table~\ref{tab:decisive}). Because these cases informed the design of the readouts, we regard them as supporting rather than confirmatory evidence.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/localization.pdf}
+\includegraphics[width=\columnwidth]{figures/localization.pdf}
 \caption{\textbf{Acceptance and localization are distinct decisions} (broader held-out set, matched 10\% FPR).
 (a)~Accepted lesion crops, divided into those whose returned location lies within 3\,mm of the insertion (dark; localized sensitivity) and elsewhere (light). The bar end gives crop sensitivity. All scorers use the same search and the same lesion crops.
 (b)~Paired differences in crop (circles) and localized (diamonds) sensitivity with 95\% CIs.}
 \label{fig:localization}
-\end{figure*}
+\end{figure}
 
 \subsection{Acceptance versus Localization}
 \label{sec:res_loc}
-A crop-by-crop comparison of the two placements explains the difference between the endpoints. Of the net gain of 746 localized insertions, about a third arises from crops accepted under both placements, where alignment moves the returned location onto the lesion (386 crops, against 124 moved away); the remainder comes from crops that only the aligned profile accepts (647 \vs 163; Table~S2). Localization therefore improves considerably more than acceptance. This behavior follows from the competition illustrated in Fig.~\ref{fig:overview}: if a vessel response $m(x_v)$ exceeds a lesion response $m(x_\ell)$ and conditioning lowers them by $d_v$ and $d_\ell$, the lesion becomes the maximum when $d_v-d_\ell>m(x_v)-m(x_\ell)$, regardless of whether the crop decision changes.
+A crop-by-crop comparison of the two placements explains the difference between the endpoints. Of the net gain of 746 localized insertions, about a third arises from crops accepted under both placements, where alignment moves the returned location onto the lesion (386 crops, against 124 moved away); the remainder comes from crops that only the aligned profile accepts (647 \vs 163; Table~S3). Localization therefore improves considerably more than acceptance. This behavior follows from the competition illustrated in Fig.~\ref{fig:overview}: if a vessel response $m(x_v)$ exceeds a lesion response $m(x_\ell)$ and conditioning lowers them by $d_v$ and $d_\ell$, the lesion becomes the maximum when $d_v-d_\ell>m(x_v)-m(x_\ell)$, regardless of whether the crop decision changes.
 
 The localization gain does not depend on the choice of readout or on refitting. In a post hoc analysis, fixed subtraction compared with its own separately tuned rotation gains $+9.66\pp$ \ci{+8.24}{+11.38} in localized sensitivity on the broader set and $+2.39\pp$ \ci{+1.22}{+3.28} on HiPaS. Rotating only the field under the aligned classifier yields $+4.26\pp$ \ci{+2.39}{+5.83} and $+0.51\pp$ \ci{-0.15}{+1.09}, respectively.
 
@@ -99,9 +100,9 @@ The same distinction appears in two additional transfer conditions of the low-te
 \label{tab:old}
 \end{table}
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/roc.pdf}
+\includegraphics[width=\columnwidth]{figures/roc.pdf}
 \caption{\textbf{ROC curves and transferred thresholds.} Curves use within-cohort negatives; shading gives pointwise 95\% block intervals for the two profile placements. Open circles mark the frozen LUNA16 cutoffs, applied unchanged in both domains.}
 \label{fig:roc}
-\end{figure*}
+\end{figure}
