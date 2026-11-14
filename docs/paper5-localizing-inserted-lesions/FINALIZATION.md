@@ -76,28 +76,3 @@ The most decisive next study would be a new prespecified held-out evaluation wit
 | Figs. 3/4 one column; no text over points; arrow colour | Localization and ROC figures are now one column (stacked panels). The ROC callout arrow is dark ink, not a data colour. The strata figure was already one column. |
 | Conclusion reflecting the intro, shortcomings, future directions | Discussion and Conclusion are separate again. The Conclusion answers the research question, lists the shortcomings (inserted lesions, failed primary criterion, post hoc robustness, modest absolute sensitivity, calibration transfer), and gives five directions: scan-level real-nodule study, learned scorers with explicit aligned subtraction, curved forecasts, target-domain calibration, placement shams as a general control. |
 | Fig. 1 a+b one column; Heun substep | Not applicable. Fig. 1 is a five-step graphical abstract that needs full width, and there is no Heun solver in this paper. |
-
-## Skill checklist pass (cvpr-paper-revision SKILL.md, 2026-11-13 evening)
-- **Toy example:** now uses numbers computed from the Fig. 1 code (`scripts/fig_overview.py`): junction 1.00 vs lesion 0.91 observed; 0.00 vs 0.89 after aligned subtraction; 1.50 vs 1.08 after rotated subtraction.
-- **Contributions:** "First, … Second, … Third, …", with no bold labels.
-- **Method:**
-  - Lemma 1 (nonnegative least-squares reduction), Proposition 1 (profile loss obtained by eliminating the gain) and Proposition 2 (absorption of the lesion by an in-window gain), each with a short proof, all checked by hand.
-  - Constants are replaced by symbols ($R_a, R_1, R_2, R_t, \sigma_W, r_W, \mathcal{R}$), with values in a closing "Implementation details" paragraph.
-- **Experiments** follow the 4.1 Datasets / 4.2 Experimental Settings / 4.3 Baselines / 4.4 Evaluation Metrics layout, as prose without run-in headings.
-  - Baselines moved here from the Method section.
-  - The text explains why complete detection systems are excluded: a placement sham cannot be applied to them.
-  - The notation "+x pp [a, b]" is defined.
-- **Results:**
-  - Every scorer in Tables 1–3 is now discussed in the text (CT-only, CT + shell, Hessian, plug-in and the rotated readouts).
-  - The sentence "crop sensitivities of 21–24% for all scorers" was corrected to "about 19–24%" to match Table 1 (rotated fixed 20.81, rotated profile under the aligned classifier 19.26).
-  - Figures and tables are cited in numerical order.
-- **One formal Conclusion** merges the Discussion: answer, implications, ranking vs calibration, limitations, future directions.
-- **Tables:**
-  - Results only. The calibration table's text column was folded into the row labels.
-  - Bold now marks the best aligned readout (Fixed, aligned) rather than the preselected lead.
-  - Bold was removed from the HiPaS table.
-- **Captions:** shortened, no bold; definitions moved into Sec. 4.4.
-- **Abstract:** two headline numbers (about 6 and about 3 per 100 insertions).
-- **Disclosure:** BioRender is named for Fig. 1(a).
-- **Not applied:** capitalizing method names as proper names (e.g. "Profile"). It would ripple through every figure and table for little gain; the group can decide.
-- **Length:** about 10 pages of text plus references (expanded working draft).

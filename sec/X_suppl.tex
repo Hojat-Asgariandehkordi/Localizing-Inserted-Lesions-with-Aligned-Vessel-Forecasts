@@ -43,7 +43,7 @@ For an empty forecast the spatial and local template measurements coincide befor
 \begin{table}[t]
 \centering
 \input{tables/roles_onecol}
-\caption{Cohort roles; blocks are LUNA16 patients or HiPaS scans, and each control is paired with 18 insertions.}
+\caption{\textbf{Cohort roles.} Blocks are LUNA16 patients or HiPaS scans. Each control contributes one negative decision and is paired with 18 insertions.}
 \label{tab:roles}
 \end{table}
 
@@ -74,7 +74,7 @@ The development bootstrap used to plan the study estimated that approximately 12
 \centering
 \small
 \input{tables/strata}
-\caption{Paired crop-sensitivity changes at the global matched FPR cap. Strata may overlap; faintest and strongest denote the extreme contrasts of each bank. The focused analysis uses fixed subtraction, the broader analysis the preselected profile.}
+\caption{\textbf{Paired crop-sensitivity changes at the global matched FPR cap.} Strata may overlap. Faintest and strongest denote the extreme contrasts within the respective bank. The focused analysis uses fixed subtraction with settings selected on the focused development data; the broader analysis uses the preselected profile.}
 \label{tab:strata}
 \end{table*}
 
@@ -97,7 +97,7 @@ Off target & 624 & 689 & 386 \\
 Within 3 mm & 163 & 124 & 613 \\
 \bottomrule
 \end{tabular}
-\caption{Location transitions on the broader held-out set: counts over the same 12,240 lesion crops at each scorer's 10\% FPR cutoff; the diagonal holds unchanged decisions.}
+\caption{\textbf{Location transitions on the broader held-out set.} Counts are over the same 12,240 lesion crops at each scorer's overall 10\% candidate FPR cutoff; the diagonal contains unchanged decisions.}
 \label{tab:transitions}
 \end{table}
 
@@ -117,7 +117,7 @@ All four networks use the same sampled insertion variants, axial rotations and s
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/learning.pdf}
-\caption{Training behavior of the CT-only CNN. (a)~AUROC versus the number of fitting patients (single-seed snapshots; the reported 67.54\% averages two seeds) with the ridge classifier for reference. (b)~Training AUROC on four fitting patients for an easy and a hard setting.}
+\caption{\textbf{Training behavior of the CT-only CNN.} (a)~AUROC versus the number of fitting patients (single-seed snapshots; the reported 67.54\% averages two seeds), with the ridge classifier on development for reference. (b)~Training AUROC on four fitting patients for an easy setting (strong off-center lesions) and a hard setting (all insertion variants), the latter recorded up to 125 epochs.}
 \label{fig:learned}
 \end{figure*}
 
