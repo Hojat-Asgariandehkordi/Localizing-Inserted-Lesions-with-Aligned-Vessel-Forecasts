@@ -16,14 +16,14 @@ Let $Q$ denote a $90^\circ$ rotation about the slice axis through $c$. Since the
 
 \subsection{Exterior Vessel Forecast}
 \label{sec:forecast}
-The forecaster continues vessels whose entry and exit points are visible in the exterior. Peaks on a sphere of radius $15.5\mm$ propose pairs of entry and exit points, and a pair is retained if the signal continues against its transverse flanks at radii of $17.8$ and $20.4\mm$ on both sides. For each retained chord we fit a Gaussian cross-section, with width and gain, to the two exterior segments, interpolate width and amplitude along the chord, and taper the field smoothly beyond $22\mm$. The resulting forecast $f$ is an additive estimate in CT units; a crop without an accepted chord has $f=0$ and is processed by the same procedure. All forecaster constants are listed in Sec.~S1 of the supplement. We verify the shared-exterior property by confirming that the rotation preserves the value multiset of every control, that rerunning the forecaster after replacing the hidden region yields an identical field, and that the visible exteriors of every rendered pair agree bitwise. A straight chord is an approximation that curved paths and branches can violate; the native-vessel experiment in Sec.~\ref{sec:native} evaluates this case directly.
+The forecaster continues vessels whose entry and exit points are visible in the exterior. Intensity peaks on a sphere of radius $R_a$ just outside the hidden ball propose pairs of entry and exit points, and a pair is retained if the signal continues against its transverse flanks at two larger radii $R_1<R_2$ on both sides. For each retained chord, a straight segment through the hidden ball, we fit a Gaussian cross-section with width and gain to the two exterior segments, interpolate width and amplitude along the chord, and taper the field smoothly beyond a radius $R_t$. The resulting forecast $f$ is an additive estimate in CT units; a crop without an accepted chord has $f=0$ and is processed by the same procedure. We verify the shared-exterior property by confirming that the rotation preserves the value multiset of every control, that rerunning the forecaster after replacing the hidden region yields an identical field, and that the visible exteriors of every rendered pair agree bitwise. A straight chord is an approximation that curved paths and branches can violate; the native-vessel experiment in Sec.~\ref{sec:native} evaluates this case directly.
 
 \subsection{Forecast-Conditioned Readouts}
 \label{sec:readout}
 A readout tests, at every candidate location in the core, whether the crop contains a compact bright signal beyond what the forecast explains. We first fix the local quantities it operates on.
 
 \paragraph{Local windows and projections.}
-For a search center $x$ in the core, let $W_x(p)=\exp(-\|p-x\|^2/2\sigma_W^2)$ for voxels $p$ with $\|p-x\|\le6\mm$ and $W_x(p)=0$ otherwise, with $\sigma_W=3.4\mm$. These weights define a local inner product and norm,
+For a search center $x$ in the core, let $W_x(p)=\exp(-\|p-x\|^2/2\sigma_W^2)$ for voxels $p$ with $\|p-x\|\le r_W$ and $W_x(p)=0$ otherwise, where $\sigma_W$ sets the width of the window and $r_W$ its support. These weights define a local inner product and norm,
 \begin{equation}
 \ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p),\qquad \nrm{a}^2=\ip{a}{a},
 \end{equation}
@@ -32,7 +32,7 @@ for any two volumes $a,b$. Let $B$ be the matrix whose four columns are a consta
 P_x a = a-B\,(B^\top W_x B)^{-1}B^\top W_x\,a
 \label{eq:proj}
 \end{equation}
-be the $W_x$-weighted projection onto the orthogonal complement of $B$, which removes the local background level and any linear intensity drift. A lesion of radius $r$ is represented by the compact template $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$, where $[\,\cdot\,]_+=\max(\cdot,0)$ and $r\in\{1.85,2.7,3.7\}\mm$. Applying the projection to the observation, the forecast and the template yields the three local quantities
+be the $W_x$-weighted projection onto the orthogonal complement of $B$, which removes the local background level and any linear intensity drift. A lesion of radius $r$ is represented by the compact template $T_{x,r}(p)=[1-\|p-x\|^2/r^2]_+^{0.8}$, where $[\,\cdot\,]_+=\max(\cdot,0)$ and the radius $r$ ranges over a small set $\mathcal{R}$ of lesion sizes. Applying the projection to the observation, the forecast and the template yields the three local quantities
 \begin{equation}
 z=P_x y,\qquad u=P_x f,\qquad t=P_x T_{x,r},
 \end{equation}
@@ -56,11 +56,20 @@ g_0=\frac{\ip{u}{z}+\lambda}{G},\qquad G=\nrm{u}^2+\lambda ,
 which interpolates between the least-squares gain $\ip{u}{z}/\nrm{u}^2$ (small $\rho$) and the exterior gain $1$ (large $\rho$).
 
 \paragraph{Adding the lesion term.}
-For any fixed choice of gain, adding the term $h\,t$ is a one-dimensional nonnegative least-squares problem. Its loss is a quadratic $J(h)=J_0-2ah+h^2d$ whose minimizer over $h\ge0$ is $h^\star=[a]_+/d$, so that the loss decreases by
+For any fixed treatment of the gain, adding the term $h\,t$ is a one-dimensional nonnegative least-squares problem, whose solution has a simple closed form.
+
+\begin{lemma}
+\label{lem:nnls}
+Let $J(h)=J_0-2ah+h^2d$ with $d>0$. Then $\min_{h\ge0}J(h)$ is attained at $h^\star=[a]_+/d$, and the loss decreases by
 \begin{equation}
 \Delta J=J_0-J(h^\star)=\frac{[a]_+^2}{d}.
 \label{eq:reduction}
 \end{equation}
+\end{lemma}
+\begin{proof}
+$J$ is a convex quadratic with unconstrained minimizer $a/d$. If $a>0$ this point is feasible and $J_0-J(a/d)=a^2/d$; if $a\le0$, $J$ is nondecreasing on $h\ge0$ and the minimum is $J_0$ at $h=0$.
+\end{proof}
+
 The correlation $a$ measures how well the template matches the part of $z$ not explained by the vessel, and $d$ is the effective energy of the template. The four readouts differ only in how they treat the gain and therefore in $a$ and $d$:
 \begin{equation}
 \begin{aligned}
@@ -71,23 +80,42 @@ The correlation $a$ measures how well the template matches the part of $z$ not e
 \end{aligned}
 \label{eq:readouts}
 \end{equation}
-The CT-only readout ignores the forecast ($u=0$). Fixed subtraction keeps the exterior gain $g=1$, so its null loss is $J_0=\nrm{z-u}^2$. The plug-in readout holds the null estimate $g_0$ fixed. The joint profile (profile for short) instead minimizes $\nrm{z-gu-ht}^2+\lambda(g-1)^2$ over $g$ and $h$ together. For fixed $h$ the optimal gain is $g(h)=g_0-h\ip{u}{t}/G$, and substituting it back yields
+The CT-only readout ignores the forecast ($u=0$). Fixed subtraction keeps the exterior gain $g=1$, so its null loss is $J_0=\nrm{z-u}^2$. The plug-in readout holds the null estimate $g_0$ fixed. The joint profile (profile for short) instead fits the gain and the lesion amplitude together; the following result shows that this again has the form of Lemma~\ref{lem:nnls}.
+
+\begin{proposition}
+\label{prop:profile}
+Let $J(g,h)=\nrm{z-gu-ht}^2+\lambda(g-1)^2$. Then $\min_gJ(g,h)$ is attained at $g(h)=g_0-h\ip{u}{t}/G$, and
 \begin{equation}
 \begin{aligned}
-J(h)&=J_0-2ah+h^2d_{\rm prof},\\
+\min_g J(g,h)&=J_0-2ah+h^2d_{\rm prof},\\
 d_{\rm prof}&=\nrm{t}^2-\ip{t}{u}^2/G,
 \end{aligned}
 \label{eq:profile}
 \end{equation}
-with the same $a$ as the plug-in readout. Profile and plug-in therefore coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<\nrm{t}^2$ and profiling assigns more weight to the same residual.
+with $a=\ip{t}{z}-g_0\ip{t}{u}$ as for the plug-in readout.
+\end{proposition}
+\begin{proof}
+For fixed $h$, $J$ is the null objective of Eq.~\eqref{eq:null} applied to $w=z-ht$, so its minimum is $\nrm{w}^2+\lambda-(\ip{u}{w}+\lambda)^2/G$ at $g=(\ip{u}{w}+\lambda)/G=g(h)$. Expanding $\nrm{w}^2=\nrm{z}^2-2h\ip{t}{z}+h^2\nrm{t}^2$ and $\ip{u}{w}+\lambda=Gg_0-h\ip{u}{t}$, and subtracting the same expression at $h=0$, which equals $J_0$, gives $-2h(\ip{t}{z}-g_0\ip{u}{t})+h^2(\nrm{t}^2-\ip{u}{t}^2/G)$.
+\end{proof}
+
+Profile and plug-in therefore coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<\nrm{t}^2$ and profiling assigns more weight to the same residual.
 
 \paragraph{Why the gain treatment matters at the lesion.}
-Suppose the crop contains a lesion that matches the template, $z=z_0+h_\star t$ with $h_\star>0$. Because $g_0$ is fitted on the full window, it changes to $g_0+h_\star\ip{u}{t}/G$, and the plug-in correlation grows by only
+The difference between the readouts is sharpest when a lesion is present.
+
+\begin{proposition}
+\label{prop:absorb}
+Let $z=z_0+h_\star t$ with $h_\star>0$, and let $a_{\rm fix}$ and $a_{\rm plug}$ denote the correlations of the fixed and plug-in readouts in Eq.~\eqref{eq:readouts}. Then, relative to $z_0$,
 \begin{equation}
-h_\star\Bigl(\nrm{t}^2-\frac{\ip{u}{t}^2}{G}\Bigr)\ \le\ h_\star\nrm{t}^2 ,
+\Delta a_{\rm fix}=h_\star\nrm{t}^2,\qquad \Delta a_{\rm plug}=h_\star\Bigl(\nrm{t}^2-\frac{\ip{u}{t}^2}{G}\Bigr).
 \label{eq:absorb}
 \end{equation}
-whereas the correlation under fixed subtraction grows by the full $h_\star\nrm{t}^2$. A gain estimated inside the core can thus absorb part of the lesion whenever forecast and template overlap, while a fixed gain cannot absorb it but inherits any amplitude error of the exterior fit. For an empty forecast ($u=0$) all four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
+\end{proposition}
+\begin{proof}
+$a_{\rm fix}$ is linear in $z$ with coefficient $t$, which gives the first identity. For the plug-in readout, $g_0$ is itself linear in $z$ and increases by $h_\star\ip{u}{t}/G$, which lowers $-g_0\ip{t}{u}$ by $h_\star\ip{u}{t}^2/G$.
+\end{proof}
+
+A gain estimated inside the core can thus absorb part of the lesion whenever forecast and template overlap, whereas a fixed gain cannot absorb it but inherits any amplitude error of the exterior fit. For an empty forecast ($u=0$) all four readouts reduce to the same local test, so differences on such crops arise only from the fitted classifier coefficients.
 
 \subsection{Scoring, Search and Classification}
 \label{sec:score}
@@ -104,7 +132,7 @@ m_r(x)=\frac{[a]_+}{\sqrt{d}\,\sigma_0},\qquad \sigma_0=\sqrt{\frac{J_0}{\sum_p 
 \small
 \Require crop $y$, center $c$, readout $\in\{$CT-only, fixed, plug-in, profile$\}$
 \State $f\gets F(y|_E)$ \Comment{forecast from voxels beyond 14\,mm}
-\For{centers $x$ within $10\mm$ of $c$, radii $r\in\{1.85,2.7,3.7\}\mm$}
+\For{centers $x$ in the core, radii $r\in\mathcal{R}$}
   \State $z,u,t\gets P_x y,\;P_x f,\;P_x T_{x,r}$ \Comment{affine residuals}
   \State $J_0,g_0\gets$ no-lesion fit, Eq.~\eqref{eq:null} (fixed: $g=1$)
   \State $a,d\gets$ correlation and energy for the readout
@@ -117,6 +145,5 @@ m_r(x)=\frac{[a]_+}{\sqrt{d}\,\sigma_0},\qquad \sigma_0=\sqrt{\frac{J_0}{\sum_p 
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Baselines}
-\label{sec:baselines}
-The Hessian baseline subtracts the same forecast at a strength of $0.35$, $0.7$ or $1.0$ before computing a standard compact-curvature statistic at Gaussian scales of 1.3, 2.5 and $4.0\mm$. It measures the contribution of a different readout when the nuisance estimate is held fixed. The learned baseline is a hybrid CNN with a small 3D feature extractor and a shared CT feature path, whose second input is either smoothed CT (the CT-only CNN), the aligned forecast, the rotated forecast or the residual $y-f$; architecture, data, seeds and training budget are identical across inputs (Sec.~S6).
+\paragraph{Implementation details.}
+The forecaster samples the masked, smoothed crop at 2,400 nearly uniform anchors on the sphere of radius $R_a=15.5\mm$, tests continuation at $R_1=17.8\mm$ and $R_2=20.4\mm$, and tapers the field between $R_t=22\mm$ and $26\mm$ with a cubic smoothstep; the remaining forecaster constants are listed in Sec.~S1. The readout windows use $\sigma_W=3.4\mm$ and $r_W=6\mm$, and the template radii are $\mathcal{R}=\{1.85,2.7,3.7\}\mm$. The gain penalty $\rho$, the noise floor $\tau$ and the ridge strength are tuned jointly over three coupled settings listed in Sec.~S2.
