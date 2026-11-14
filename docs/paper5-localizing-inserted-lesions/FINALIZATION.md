@@ -76,3 +76,21 @@ The most decisive next study would be a new prespecified held-out evaluation wit
 | Figs. 3/4 one column; no text over points; arrow colour | Localization and ROC figures are now one column (stacked panels). The ROC callout arrow is dark ink, not a data colour. The strata figure was already one column. |
 | Conclusion reflecting the intro, shortcomings, future directions | Discussion and Conclusion are separate again. The Conclusion answers the research question, lists the shortcomings (inserted lesions, failed primary criterion, post hoc robustness, modest absolute sensitivity, calibration transfer), and gives five directions: scan-level real-nodule study, learned scorers with explicit aligned subtraction, curved forecasts, target-domain calibration, placement shams as a general control. |
 | Fig. 1 a+b one column; Heun substep | Not applicable. Fig. 1 is a five-step graphical abstract that needs full width, and there is no Heun solver in this paper. |
+
+## Skill checklist, lighter pass (2026-11-14)
+The authors reverted the full checklist pass (cc037fb → 6bce041) and asked for presentation-only changes. Applied:
+- **Toy example:** now uses scores computed from the Fig. 1 code: junction 1.00 vs lesion 0.91; after aligned subtraction 0.00 vs 0.89; after rotated subtraction 1.50 vs 1.08.
+- **Contributions:** "First, … Second, … Third, …", with no bold.
+- **Abstract:** a second headline number (about 3 per 100 on HiPaS).
+- **Notation:** "+x pp [a, b]" defined in Sec. 4.2.
+- **Results:**
+  - Every scorer in Tables 1–3 is mentioned.
+  - "21–24% for all scorers" corrected to "about 19–24%" to match Table 1.
+  - The ROC text says the curves use each cohort's own negatives.
+- **Captions and tables:**
+  - Captions are shorter and have no bold.
+  - Bold in Table 1 marks the best aligned readout (Fixed, aligned); the HiPaS table has no bold.
+  - The calibration table's text column was folded into the row labels.
+- **Disclosure:** BioRender is named for Fig. 1(a).
+
+**Kept unchanged:** the section layout, the math, the Discussion/Conclusion split and the placement of constants.
