@@ -86,10 +86,34 @@ def line_through(p, v, half):
 # erase panel-4 interior (keep frame), then place the two tiles
 erase(14, 470, 420, 812)
 
+# 2b. the BioRender canvas cuts off the top edge of the upper panels and the bottom
+# edge of the lower panels. Pad the canvas, then redraw every panel frame as one
+# clean rounded rectangle over the art (old side borders are covered). ----------
+from PIL import ImageDraw
+PADT, PADB, PADX = 12, 12, 4
+FRAME, FILL = (160, 171, 190), (235, 243, 253)
+PANELS = [(1, -9, 431, 369), (483, -9, 1048, 369), (1103, -9, 1468, 369),
+          (1, 419, 429, H + 9), (482, 419, 1049, H + 9), (1102, 419, 1468, H + 9)]
+canvas = Image.new("RGB", (W + 2 * PADX, H + PADT + PADB), "white")
+draw = ImageDraw.Draw(canvas)
+for x0, y0, x1, y1 in PANELS:                    # fill the padded bands with the panel colour
+    draw.rounded_rectangle([x0 + PADX, y0 + PADT, x1 + PADX, y1 + PADT], radius=16, fill=FILL)
+art_c = art.copy()
+art_c[355:425, :6] = 255                         # stray edge line between the rows (left)
+art_c[355:425, W - 6:] = 255
+canvas.paste(Image.fromarray(art_c), (PADX, PADT))
+draw = ImageDraw.Draw(canvas)
+for x0, y0, x1, y1 in PANELS:
+    # cover the old border with fill, then draw the new frame
+    draw.rounded_rectangle([x0 + PADX, y0 + PADT, x1 + PADX, y1 + PADT], radius=16, outline=FILL, width=9)
+    draw.rounded_rectangle([x0 + PADX, y0 + PADT, x1 + PADX, y1 + PADT], radius=16, outline=FRAME, width=2)
+art_padded = np.asarray(canvas).copy()
+
 # 3. compose in matplotlib --------------------------------------------------------
-fig = plt.figure(figsize=(style.TXT_W, style.TXT_W * H / W))
-ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(H, 0); ax.axis("off")
-ax.imshow(art, extent=[0, W, H, 0], interpolation="lanczos")
+HT, WT = H + PADT + PADB, W + 2 * PADX
+fig = plt.figure(figsize=(style.TXT_W, style.TXT_W * HT / WT))
+ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(-PADX, W + PADX); ax.set_ylim(H + PADB, -PADT); ax.axis("off")
+ax.imshow(art_padded, extent=[-PADX, W + PADX, H + PADB, -PADT], interpolation="lanczos")
 
 S = 0.62                                                   # tile scale (crop px -> canvas px)
 TILES = {"aligned": (40, 478), "rotated": (40, 646)}
