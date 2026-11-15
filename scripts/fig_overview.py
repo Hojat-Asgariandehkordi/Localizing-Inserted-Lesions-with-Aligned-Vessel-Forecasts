@@ -170,6 +170,6 @@ ao.set_xlabel("aligned $-$ rotated (pp)", fontsize=7, labelpad=1)
 fig.text(0.79, T, r"$\bf(d)$ Outcome", fontsize=8.4, va="top")
 fig.text(0.79, T - 0.085, "broader held-out set,\n10% FPR, 95% CI", fontsize=6.6, color=C["muted"], va="top")
 
-fig.savefig(ROOT / "figures/overview.pdf")
+fig.savefig(ROOT / "figures/overview.pdf", bbox_inches="tight", pad_inches=0.01)
 fig.savefig("/tmp/overview.png", dpi=200)
 print("peaks", peak(y1), peak(y1 - f), peak(y1 - fr))

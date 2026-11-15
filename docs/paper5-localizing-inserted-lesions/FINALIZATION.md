@@ -94,3 +94,8 @@ The authors reverted the full checklist pass (cc037fb → 6bce041) and asked for
 - **Disclosure:** BioRender is named for Fig. 1(a).
 
 **Kept unchanged:** the section layout, the math, the Discussion/Conclusion split and the placement of constants.
+
+## Bold and white-space cleanup (2026-11-14)
+- **Abstract:** contains no confidence intervals (headline numbers are "about 6" and "about 3 per 100"). Small grammar fix.
+- **Bold run-in headings removed** from the main paper: 12 `\paragraph` headings in Method, Experiments and Results. Each paragraph now opens with a sentence naming its topic, and dataset names are in italics. In the supplement, run-in headings are plain italic lead-ins. The only bold left in the body is the best-method row of Table 1.
+- **White space:** all figures are now saved with a tight bounding box (0.01 in padding), which removes the empty margins around them. For example, Fig. 1's height went from about 122 pt to 100 pt. Template spacing is unchanged; no layout hacks.

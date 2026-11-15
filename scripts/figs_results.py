@@ -50,8 +50,9 @@ def ep_legend(ax, **kw):
 
 
 def save(fig, name):
-    fig.savefig(FIG / f"{name}.pdf")
-    fig.savefig(f"/tmp/{name}.png", dpi=200)
+    # trim empty margins so no white band appears around the figure in the paper
+    fig.savefig(FIG / f"{name}.pdf", bbox_inches="tight", pad_inches=0.01)
+    fig.savefig(f"/tmp/{name}.png", dpi=200, bbox_inches="tight", pad_inches=0.01)
     plt.close(fig)
 
 

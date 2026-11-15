@@ -11,8 +11,7 @@ y_0=b+v,\qquad y_1=b+v+s .
 \end{equation}
 For native-vessel backgrounds we set $v=0$, since the vessels are already part of $b$. Because $y_0$ and $y_1$ coincide on $E$, the forecast $f=F(y|_E)$ is identical for a control and all of its insertions. All scorers evaluate $y_0$ and $y_1$ at the same center $c$ and may use the entire crop; only the forecaster is restricted to $E$. A score can thus increase because a lesion is present, but not because the lesion altered the forecast.
 
-\paragraph{Placement sham and exterior-summary control.}
-Let $Q$ denote a $90^\circ$ rotation about the slice axis through $c$. Since the row and column spacings are equal, $Q$ permutes voxels without interpolation. The sham forecast $Qf$ preserves the radial profile, the multiset of values, the smoothness and the shape of $f$, but in general moves its vessels to locations without vascular anatomy. We refer to $f$ and $Qf$ as the \emph{aligned} and \emph{rotated} placements. Each aligned scorer is compared with (i)~the rotated placement with a refitted classifier, which allows the sham to make the best possible use of a misplaced field, and (ii)~the rotated placement evaluated with the aligned classifier, which removes any effect of refitting. A third control, denoted CT + shell, receives four summary statistics of the shell but no spatial field. Gains over all three controls are attributed to placement.
+To separate placement from content, let $Q$ denote a $90^\circ$ rotation about the slice axis through $c$. Since the row and column spacings are equal, $Q$ permutes voxels without interpolation. The sham forecast $Qf$ preserves the radial profile, the multiset of values, the smoothness and the shape of $f$, but in general moves its vessels to locations without vascular anatomy. We refer to $f$ and $Qf$ as the \emph{aligned} and \emph{rotated} placements. Each aligned scorer is compared with (i)~the rotated placement with a refitted classifier, which allows the sham to make the best possible use of a misplaced field, and (ii)~the rotated placement evaluated with the aligned classifier, which removes any effect of refitting. A third control, denoted CT + shell, receives four summary statistics of the shell but no spatial field. Gains over all three controls are attributed to placement.
 
 \subsection{Exterior Vessel Forecast}
 \label{sec:forecast}
@@ -22,7 +21,6 @@ The forecaster continues vessels whose entry and exit points are visible in the 
 \label{sec:readout}
 A readout tests, at every candidate location in the core, whether the crop contains a compact bright signal beyond what the forecast explains. We first fix the local quantities it operates on.
 
-\paragraph{Local windows and projections.}
 For a search center $x$ in the core, let $W_x(p)=\exp(-\|p-x\|^2/2\sigma_W^2)$ for voxels $p$ with $\|p-x\|\le6\mm$ and $W_x(p)=0$ otherwise, with $\sigma_W=3.4\mm$. These weights define a local inner product and norm,
 \begin{equation}
 \ip{a}{b}=\sum_p W_x(p)\,a(p)\,b(p),\qquad \nrm{a}^2=\ip{a}{a},
@@ -43,7 +41,6 @@ z\approx g\,u+h\,t,\qquad h\ge 0 .
 \end{equation}
 Here the vessel gain $g$ scales the forecast and the lesion amplitude $h$ scales the template; $h$ is constrained to be nonnegative because lesions are brighter than the parenchyma.
 
-\paragraph{The no-lesion fit.}
 The exterior fit already estimates the vessel amplitude, which corresponds to $g=1$. Under the null hypothesis $h=0$ we therefore allow $g$ to deviate from $1$ only at a cost. With a penalty weight $\rho>0$ and $\lambda=\rho\nrm{u}^2$, which makes the penalty scale with the forecast energy, the null loss is
 \begin{equation}
 J_0=\min_g\ \nrm{z-gu}^2+\lambda(g-1)^2 .
@@ -55,7 +52,6 @@ g_0=\frac{\ip{u}{z}+\lambda}{G},\qquad G=\nrm{u}^2+\lambda ,
 \end{equation}
 which interpolates between the least-squares gain $\ip{u}{z}/\nrm{u}^2$ (small $\rho$) and the exterior gain $1$ (large $\rho$).
 
-\paragraph{Adding the lesion term.}
 For any fixed choice of gain, adding the term $h\,t$ is a one-dimensional nonnegative least-squares problem. Its loss is a quadratic $J(h)=J_0-2ah+h^2d$ whose minimizer over $h\ge0$ is $h^\star=[a]_+/d$, so that the loss decreases by
 \begin{equation}
 \Delta J=J_0-J(h^\star)=\frac{[a]_+^2}{d}.
@@ -81,8 +77,7 @@ d_{\rm prof}&=\nrm{t}^2-\ip{t}{u}^2/G,
 \end{equation}
 with the same $a$ as the plug-in readout. Profile and plug-in therefore coincide when template and forecast are orthogonal after projection; where they overlap, $d_{\rm prof}<\nrm{t}^2$ and profiling assigns more weight to the same residual.
 
-\paragraph{Why the gain treatment matters at the lesion.}
-Suppose the crop contains a lesion that matches the template, $z=z_0+h_\star t$ with $h_\star>0$. Because $g_0$ is fitted on the full window, it changes to $g_0+h_\star\ip{u}{t}/G$, and the plug-in correlation grows by only
+The treatment of the gain matters most when a lesion is present. Suppose the crop contains a lesion that matches the template, $z=z_0+h_\star t$ with $h_\star>0$. Because $g_0$ is fitted on the full window, it changes to $g_0+h_\star\ip{u}{t}/G$, and the plug-in correlation grows by only
 \begin{equation}
 h_\star\Bigl(\nrm{t}^2-\frac{\ip{u}{t}^2}{G}\Bigr)\ \le\ h_\star\nrm{t}^2 ,
 \label{eq:absorb}
