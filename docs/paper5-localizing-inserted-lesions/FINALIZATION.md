@@ -99,3 +99,15 @@ The authors reverted the full checklist pass (cc037fb → 6bce041) and asked for
 - **Abstract:** contains no confidence intervals (headline numbers are "about 6" and "about 3 per 100"). Small grammar fix.
 - **Bold run-in headings removed** from the main paper: 12 `\paragraph` headings in Method, Experiments and Results. Each paragraph now opens with a sentence naming its topic, and dataset names are in italics. In the supplement, run-in headings are plain italic lead-ins. The only bold left in the body is the best-method row of Table 1.
 - **White space:** all figures are now saved with a tight bounding box (0.01 in padding), which removes the empty margins around them. For example, Fig. 1's height went from about 122 pt to 100 pt. Template spacing is unchanged; no layout hacks.
+
+## Figure 1: BioRender method overview (2026-11-14)
+- **Sketch:** a layout sketch (`figures/biorender_ref/method_sketch.png`, public on GitHub) was used as the BioRender reference.
+- **Three BioRender drafts:**
+  - Draft 1 (db263503…) had a duplicated panel and two lesions.
+  - Draft 2 (657858a6…) used the authors' chosen 2×3 layout with real CT texture.
+  - Draft 3 (bb14dcd7…) fixed panels 3, 4 and 6 and is the version used: https://app.biorender.com/illustrations/bb14dcd7fad0b7abcc6ab85f
+- **Post-processing (`scripts/fig_overview_br.py`):**
+  - All BioRender lettering was erased and every label retypeset in Times from one LAYOUT table.
+  - Panel 4 was rebuilt for scientific accuracy. Both tiles use the same lesion crop (from panel 6, crosshair removed with `cv2.inpaint`). Aligned: vessel inpainted away under the teal forecast, green mark on the lesion. Rotated: vessel kept, orange forecast rotated 90° about the crop centre, red mark on the vessel.
+- **Resolution:** the art is a 1470×820 px browser capture of the 2752×1536 original (about 215 dpi at full width). **Before camera-ready:** export the BioRender figure at 300 dpi or more, save it as `figures/biorender/method_overview_v3_hi.png`, scale the pixel coordinates in the script, and add the named BioRender citation.
+- **Toy slice:** the earlier computed figure moved to Supplement Fig. S1 (`scripts/fig_overview.py` → `figures/toy_slice.pdf`), so the toy example in the introduction still has its figure. The learning curves are now Fig. S2.

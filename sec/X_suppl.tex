@@ -67,7 +67,14 @@ For an empty forecast the spatial and local template measurements coincide befor
 
 \section{Localization and Conditional Analyses}
 \label{supp:loc}
-\smallskip\noindent\textit{Location transitions.}\enspace Localization can improve without a change in the crop decision. At the broader matched cap, the refitted rotation of the profile accepted 1,699 lesion crops with an off-target location and localized 900, whereas the aligned profile localized 1,646. Table~\ref{tab:transitions} cross-tabulates the paired decisions. Alignment moved 386 accepted off-target locations to within 3\,mm and 124 in the opposite direction; it further localized 647 crops rejected by the rotation and lost 163 localized crops to rejection, for a net gain of 746 localized insertions. The corresponding analysis on native-vessel backgrounds yields 284 newly localized and 69 lost insertions.
+\smallskip\noindent\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/toy_slice.pdf}
+\caption{Toy example of Sec.~1 on a generated slice. (a)~A compact-blob search in the 10-mm core returns the vessel junction (red cross) instead of the lesion (gold ring). (b)~Control and lesion crops share the exterior outside the hatched 14-mm ball and receive the same forecast $f$. (c)~Subtracting the aligned $f$ moves the returned location to the lesion; the rotated sham leaves it on the vessel. (d)~On the broader held-out set, alignment changes crop sensitivity only slightly but raises localized sensitivity (95\% CIs). Returned locations in (a)--(c) are computed with a simplified readout.}
+\label{fig:toy}
+\end{figure*}
+
+\textit{Location transitions.}\enspace Localization can improve without a change in the crop decision. At the broader matched cap, the refitted rotation of the profile accepted 1,699 lesion crops with an off-target location and localized 900, whereas the aligned profile localized 1,646. Table~\ref{tab:transitions} cross-tabulates the paired decisions. Alignment moved 386 accepted off-target locations to within 3\,mm and 124 in the opposite direction; it further localized 647 crops rejected by the rotation and lost 163 localized crops to rejection, for a net gain of 746 localized insertions. The corresponding analysis on native-vessel backgrounds yields 284 newly localized and 69 lost insertions.
 
 \begin{table}[t]
 \centering
