@@ -5,7 +5,7 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{section}{0}\setcounter{table}{0}\setcounter{figure}{0}
-\noindent This supplement provides implementation details, cohort construction, inference procedures and additional analyses. Sections and tables prefixed with ``S'' refer to this document; all other numbers refer to the main paper. The low-texture LUNA16 subset of the main paper is referred to as the focused study.
+\noindent This supplement provides implementation details, cohort construction, inference procedures and additional analyses. Sections, tables and figures prefixed with ``S'' belong to this supplement; all other numbers refer to the main paper, and citations refer to its reference list. The low-texture LUNA16 subset of the main paper is referred to as the focused study.
 
 \section{Exterior Forecast and Controls}
 \label{supp:fit}
@@ -36,9 +36,9 @@ For an empty forecast the spatial and local template measurements coincide befor
 \label{supp:cohort}
 \begin{table}[t]
 \centering
-\input{tables/roles_onecol}
 \caption{Cohort roles; blocks are LUNA16 patients or HiPaS scans, and each control is paired with 18 insertions.}
 \label{tab:roles}
+\input{tables/roles_onecol}
 \end{table}
 
 \smallskip\noindent\textit{LUNA16 rosters.}\enspace The LUNA16 archive provides an auditable TCIA subject crosswalk and a separate list of irrelevant findings~\cite{setio2017,armato2011}. For the broader test and calibration rosters, we exclude every patient used in the original focused fitting, development, calibration, test or shift roles, the two broader fitting and development folds, and the subject repeated across folds. Within each remaining fold, a fixed permutation assigns patients to disjoint roles; the calibration roster retains 175 of 177 assigned patients and the test roster 170 of 174, with eligibility requiring four spatial neighborhoods. All source volumes were checksum-verified, and all sampling seeds and inclusion lists were fixed before test scoring.
@@ -59,10 +59,10 @@ For an empty forecast the spatial and local template measurements coincide befor
 
 \begin{table*}[!t]
 \centering
-\small
-\input{tables/strata}
 \caption{Paired crop-sensitivity changes at the global matched FPR cap. Strata may overlap; faintest and strongest denote the extreme contrasts of each bank. The focused analysis uses fixed subtraction, the broader analysis the preselected profile.}
 \label{tab:strata}
+\small
+\input{tables/strata}
 \end{table*}
 
 \section{Localization and Conditional Analyses}
@@ -78,20 +78,20 @@ For an empty forecast the spatial and local template measurements coincide befor
 
 \begin{table}[t]
 \centering
+\caption{Location transitions on the broader held-out set: counts over the same 12,240 lesion crops at each scorer's 10\% FPR cutoff; the diagonal holds unchanged decisions.}
+\label{tab:transitions}
 \small
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular}{@{}l S[table-format=4.0,group-digits=integer,group-minimum-digits=4,group-separator={,}] S[table-format=4.0,group-digits=integer,group-minimum-digits=4,group-separator={,}] S[table-format=4.0,group-digits=integer,group-minimum-digits=4,group-separator={,}]@{}}
 \toprule
  & \multicolumn{3}{c}{Aligned profile} \\
 \cmidrule(lr){2-4}
-Refitted rotation & Rejected & Off target & Within 3 mm \\
+Refitted rotation & {Rejected} & {Off target} & {Within 3\,mm} \\
 \midrule
-Rejected & 8,599 & 395 & 647 \\
+Rejected & 8599 & 395 & 647 \\
 Off target & 624 & 689 & 386 \\
 Within 3 mm & 163 & 124 & 613 \\
 \bottomrule
 \end{tabular}
-\caption{Location transitions on the broader held-out set: counts over the same 12,240 lesion crops at each scorer's 10\% FPR cutoff; the diagonal holds unchanged decisions.}
-\label{tab:transitions}
 \end{table}
 
 \smallskip\noindent\textit{Alternative comparisons.}\enspace Fixed subtraction, the strongest alternative readout, was selected as a comparator for the lead scorer. Compared with its own separately tuned rotation, it yields localized gains of $+9.66\pp$ $[+8.24,+11.38]$ on the broader held-out set and $+2.39\pp$ $[+1.22,+3.28]$ on HiPaS. This post hoc analysis uses the locked scores, whereas the primary placement comparison uses the preselected profile. Evaluating the rotation with the aligned classifier gives localized differences of $+4.26\pp$ $[+2.39,+5.83]$ on the broader held-out set and $+0.51\pp$ $[-0.15,+1.09]$ on HiPaS.
@@ -113,9 +113,9 @@ All four networks use the same sampled insertion variants, axial rotations and s
 
 \begin{table}[t]
 \centering
-\input{tables/learned_onecol}
 \caption{Hybrid CNN with four second inputs on the low-texture subset (\%), with identical architecture, data, seeds and budget. The ridge classifier on the CT-only readout reaches 69.17\% AUROC and 32.88\% sensitivity.}
 \label{tab:learned}
+\input{tables/learned_onecol}
 \end{table}
 
 \smallskip\noindent\textit{Selective use and cost.}\enspace For each extrapolated chord we compare the predicted and observed center-to-flank contrast beyond the amplitude-fit support on both legs. The resulting reliability score uses the weaker signed support and penalizes contrast disagreement; the selective policy ranks crops by this score and otherwise falls back to the shell-only classifier. A control policy ranks crops by peak forecast strength instead. Both use the same three development coverage budgets and the same scores for each branch. At approximately 65\% coverage, the two policies reached 48.91\% and 47.91\% sensitivity, compared with 52.14\% for always using aligned fixed subtraction, all at the same negative cap.
@@ -133,15 +133,15 @@ Run time was measured on a single CPU thread over 120 loaded crops from 30 focus
 \label{supp:previous}
 \begin{table}[t]
 \centering
-\input{tables/calibration_onecol}
 \caption{Paired differences of the aligned profile at the frozen LUNA16 cutoffs (pp, 95\% CI), with intervals conditional on the calibration set (frozen) or resampling it (recal.).}
 \label{tab:cal}
+\input{tables/calibration_onecol}
 \end{table}
 \begin{table}[t]
 \centering
-\input{tables/historical_onecol}
 \caption{Frozen operating points (\%) of the low-texture design on the subset itself and two transfer conditions, using its own 276 calibration negatives.}
 \label{tab:old}
+\input{tables/historical_onecol}
 \end{table}
 
 The focused study used separate thresholds derived from 276 controls. It supported a substantial placement effect, but its upper limit on the excess FPR relative to the CT-only classifier was 4.92\,pp, above the stipulated 4\,pp. The morphology-shift condition and the independent LNDb acquisition with shifted insertions did not meet the full transfer criteria~\cite{pedrosa2021}; their achieved rates are listed in Table~\ref{tab:old}. Within each test set, the profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under the morphology shift and 33.15\% and 32.94\% on LNDb, illustrating the distinction between ranking and calibration transfer.

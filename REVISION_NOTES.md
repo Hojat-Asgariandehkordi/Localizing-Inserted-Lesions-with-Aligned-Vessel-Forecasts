@@ -117,3 +117,13 @@ The source now follows `author-kit-CVPR2027-v1-latex` exactly:
 - The supplement is the kit's `sec/X_suppl.tex` (`\maketitlesupplementary`, page counter reset). `supplement.tex` is a small wrapper with the same preamble, so it still compiles on its own. It can also be appended to the main paper by uncommenting the kit's `% \input{sec/X_suppl}` line. The kit's `rebuttal.tex` is included for the rebuttal phase.
 - `\raggedbottom` was removed so page layout follows the template defaults.
 - A script confirmed that the paper text is identical to the previous version.
+
+## Single-file kit layout, symbolic constants and aligned tables
+- **One PDF.** `main.tex` is the kit's `main.tex` with its `% \input{sec/X_suppl}` line uncommented, so the main paper, the LLM statement, the single reference list and the supplement compile into one `main.pdf` (14 pages, committed for convenience). `supplement.tex` was removed. `cvpr.sty`, `ieeenat_fullname.bst`, `preamble.tex` and `rebuttal.tex` are byte-identical to the kit. Paper packages and macros are in `macros.tex`, which is input right after `preamble.tex`.
+- **Page budget.** Main text ends on page 8; the LLM statement starts page 9.
+- **LLM statement.** Replaced with the group's wording (Codex/ChatGPT for copy-editing, readability, plotting boilerplate and preliminary literature discovery; all content reviewed by the authors).
+- **Symbols instead of hard-coded constants.** Sec. 3 now writes every method constant as a symbol ($N$, $\rho_c$, $\rho_h$, $R_a$, $R_s$, $R_1$, $R_2$, $R_t$, $\sigma_W$, $r_W$, $\gamma$, $\mathcal{R}$, $\mathcal{B}$, $\mathcal{S}$, $\delta$). One paragraph at the end of Sec. 3 states their values; the remaining forecaster constants stay in Sec. S1.
+- **Space recovered to stay at 8 pages.** The LNDb FROC result, the HiPaS robustness values and the power analysis now point to Secs. S7, S5 and S4, where the full numbers remain. A few Discussion and Conclusion sentences were shortened.
+- **Tables.** All captions sit above their tables. Numeric columns use `siunitx` decimal alignment. Combined cells (sensitivity / FPR) were split into two columns, and each CI has its own column with aligned bounds (`\tci` macro).
+- **Clean-up.** Removed `supplement.tex/.pdf`, `reproduce.sh`, `reproduce.md`, `requirements-v6.txt`, `review-response.md`, `tables/macros.tex`, the old two-column tables and the BioRender reference sketches and unused drafts. The art read by `scripts/fig_overview*.py` and the V6 SVGs read by `scripts/recover_svg.py` were kept.
+- A script confirmed that no number was lost between versions; every number dropped from the main text is still in the supplement or the tables.

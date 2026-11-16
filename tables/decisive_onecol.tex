@@ -1,26 +1,28 @@
-% One-column version of tables/decisive.tex (same numbers; revision 7).
-\setlength{\tabcolsep}{1.2pt}\footnotesize
-\begin{tabular}{@{}lrrr@{\hspace{6pt}}r@{}}
+% One-column version of tables/decisive.tex (same numbers); decimal-aligned columns.
+\setlength{\tabcolsep}{1.7pt}\footnotesize
+\begin{tabular}{@{}l S[table-format=2.2] S[table-format=+2.2] S[table-format=+2.2] S[table-format=2.2] S[table-format=2.2]@{}}
 \toprule
-& Low-text. & \multicolumn{3}{c}{Broader held-out set} \\
-\cmidrule(l){3-5}
-Readout & sens. & sens. & loc. sens. & frozen \\
+& {Low-text.} & \multicolumn{4}{c}{Broader held-out set} \\
+\cmidrule(lr){2-2}\cmidrule(l){3-6}
+& & \multicolumn{2}{c}{Matched FPR} & \multicolumn{2}{c}{Frozen cutoff} \\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}
+Readout & {sens.} & {sens.} & {loc.} & {sens.} & {FPR} \\
 \midrule
-\textbf{Fixed, aligned} & \textbf{50.75} & \textbf{24.05} & \textbf{15.38} & \textbf{24.74\,/\,10.59} \\
-Fixed, rotated       & 36.03 & 20.81 & 5.72  & 21.18\,/\,10.15 \\
-Plug-in, aligned     & 39.45 & 22.54 & 11.54 & 23.86\,/\,10.44 \\
-Plug-in, rotated     & 37.39 & 21.26 & 6.92  & 19.81\,/\,9.12 \\
-Profile, aligned & 46.50 & 23.32 & 13.45 & 23.79\,/\,10.59 \\
-Profile, rotated     & 37.13 & 21.23 & 7.35  & 19.29\,/\,8.82 \\
-Prof.\ rot., aligned clf. & -- & 19.26 & 9.19 & 19.20\,/\,10.00 \\
-CT + shell           & 36.60 & 21.50 & 13.49 & 21.66\,/\,10.29 \\
-CT only              & 32.88 & 21.39 & 13.37 & 23.78\,/\,11.62 \\
-Hessian subtr.  & 47.34 & 14.31 & --    & 14.31\,/\,10.29 \\
+\bfseries Fixed, aligned & \bfseries 50.75 & \bfseries 24.05 & \bfseries 15.38 & \bfseries 24.74 & 10.59 \\
+Fixed, rotated       & 36.03 & 20.81 & 5.72  & 21.18 & 10.15 \\
+Plug-in, aligned     & 39.45 & 22.54 & 11.54 & 23.86 & 10.44 \\
+Plug-in, rotated     & 37.39 & 21.26 & 6.92  & 19.81 & 9.12 \\
+Profile, aligned     & 46.50 & 23.32 & 13.45 & 23.79 & 10.59 \\
+Profile, rotated     & 37.13 & 21.23 & 7.35  & 19.29 & 8.82 \\
+Prof.\ rot., al.\ clf. & {--} & 19.26 & 9.19 & 19.20 & 10.00 \\
+CT + shell           & 36.60 & 21.50 & 13.49 & 21.66 & 10.29 \\
+CT only              & 32.88 & 21.39 & 13.37 & 23.78 & 11.62 \\
+Hessian subtr.       & 47.34 & 14.31 & {--}  & 14.31 & 10.29 \\
 \midrule
-\multicolumn{5}{@{}l}{\emph{Lead minus \ldots\ (pp, 95\% CI)}}\\
-$-$ refitted rotation & -- & \multicolumn{1}{r}{$+2.1$} & \multicolumn{1}{r}{$+6.1$} & -- \\
-                      &    & \scriptsize[$-0.3,+4.4$] & \scriptsize[$+4.4,+7.8$] & \\
-$-$ fixed subtr.     & -- & \multicolumn{1}{r}{$-0.7$} & \multicolumn{1}{r}{$-1.9$} & -- \\
-                      &    & \scriptsize[$-3.0,+0.5$] & \scriptsize[$-3.3,-1.0$] & \\
+\multicolumn{6}{@{}l}{\emph{Lead minus \ldots\ (pp, 95\% CI)}}\\
+$-$ refitted rotation & {--} & +2.1 & +6.1 & {--} & {--} \\
+                      &      & \multicolumn{1}{r}{\scriptsize$[-0.3,+4.4]$} & \multicolumn{1}{r}{\scriptsize$[+4.4,+7.8]$} & & \\
+$-$ fixed subtr.      & {--} & -0.7 & -1.9 & {--} & {--} \\
+                      &      & \multicolumn{1}{r}{\scriptsize$[-3.0,+0.5]$} & \multicolumn{1}{r}{\scriptsize$[-3.3,-1.0]$} & & \\
 \bottomrule
 \end{tabular}

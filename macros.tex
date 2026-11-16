@@ -11,3 +11,9 @@
 \newcommand{\ip}[2]{\langle #1,#2\rangle_W}
 \newcommand{\nrm}[1]{\|#1\|_W}
 \newcommand{\ci}[2]{\,[#1,#2]}
+\usepackage{siunitx}
+\sisetup{detect-weight=true,mode=text,group-digits=false,retain-explicit-plus=true}
+\captionsetup[table]{position=top,skip=4pt}
+% aligned confidence interval inside tables: [lower, upper] with right-aligned bounds
+\newlength{\ciw}\settowidth{\ciw}{$+00.00$}
+\newcommand{\tci}[2]{[\makebox[\ciw][r]{$#1$},\,\makebox[\ciw][r]{$#2$}]}
