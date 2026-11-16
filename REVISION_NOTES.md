@@ -132,3 +132,8 @@ The source now follows `author-kit-CVPR2027-v1-latex` exactly:
 - Supplement formulas no longer contain hard-coded numbers: intensity normalization ($I_{\min}$, $I_{\max}$), lesion-profile exponents ($\kappa_f$, $\kappa_b$), the FPR cutoff ($k=\lfloor\alpha N_0\rfloor$), the sample-size scaling ($\sqrt{n_{\rm dev}}$, $z_{1-\alpha_s/2}$, $z_{1-\beta_s}$) and the localization tolerance ($\delta$).
 - One "Constants" paragraph at the start of the supplement states their values. $\alpha_s=0.05$ and 80% power are stated explicitly for the first time (they correspond to the quantiles 1.96 and 0.842 already in the text); authors to confirm.
 - The closing HiPaS sentence of Sec. S7 was shortened so the PDF stays at 14 pages.
+
+## Standalone supplement for the separate upload (2026-11-16)
+- New `supplement.tex` compiles `sec/X_suppl.tex` on its own with the kit header of `main.tex` and its own reference list (only the works the supplement cites), so it has no `?` citations when uploaded separately.
+- The supplement's opening sentence switches automatically (`\suppstandalone`): citations refer to its own list when built alone and to the main paper's list when appended to `main.tex`.
+- Submission: comment out `\input{sec/X_suppl}` in `main.tex` (main paper alone, 9 pages) and compile `supplement.tex` (6 pages). Leaving the line in gives the combined 14-page PDF.

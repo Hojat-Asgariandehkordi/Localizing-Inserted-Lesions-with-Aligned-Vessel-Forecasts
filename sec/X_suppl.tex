@@ -5,7 +5,7 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{section}{0}\setcounter{table}{0}\setcounter{figure}{0}
-\noindent This supplement provides implementation details, cohort construction, inference procedures and additional analyses. Sections, tables and figures prefixed with ``S'' belong to this supplement; all other numbers refer to the main paper, and citations refer to its reference list. The low-texture LUNA16 subset of the main paper is referred to as the focused study.
+\noindent This supplement provides implementation details, cohort construction, inference procedures and additional analyses. Sections, tables and figures prefixed with ``S'' belong to this supplement; all other numbers refer to the main paper.\ifdefined\suppstandalone{} Citations refer to the reference list at the end of this supplement.\else{} Citations refer to the reference list of the main paper.\fi\  The low-texture LUNA16 subset of the main paper is referred to as the focused study.
 
 \smallskip\noindent\textit{Constants.}\enspace Beyond those of Sec.~3, the formulas below use the intensity window $I_{\min}=-1000\hu$ and $I_{\max}=400\hu$, the lesion-profile exponents $\kappa_f=0.72$ (focused bank) and $\kappa_b=0.6$ (broader bank), the target FPR $\alpha=0.10$, the localization tolerance $\delta=3\mm$, and, for the sample-size calculation, $n_{\rm dev}=85$, $\alpha_s=0.05$ and $1-\beta_s=0.80$, so that $z_{1-\alpha_s/2}=1.96$ and $z_{1-\beta_s}=0.842$.
 
