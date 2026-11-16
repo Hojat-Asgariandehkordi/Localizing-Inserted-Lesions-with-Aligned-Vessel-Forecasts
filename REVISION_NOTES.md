@@ -127,3 +127,8 @@ The source now follows `author-kit-CVPR2027-v1-latex` exactly:
 - **Tables.** All captions sit above their tables. Numeric columns use `siunitx` decimal alignment. Combined cells (sensitivity / FPR) were split into two columns, and each CI has its own column with aligned bounds (`\tci` macro).
 - **Clean-up.** Removed `supplement.tex/.pdf`, `reproduce.sh`, `reproduce.md`, `requirements-v6.txt`, `review-response.md`, `tables/macros.tex`, the old two-column tables and the BioRender reference sketches and unused drafts. The art read by `scripts/fig_overview*.py` and the V6 SVGs read by `scripts/recover_svg.py` were kept.
 - A script confirmed that no number was lost between versions; every number dropped from the main text is still in the supplement or the tables.
+
+## Symbols in supplement formulas (2026-11-16)
+- Supplement formulas no longer contain hard-coded numbers: intensity normalization ($I_{\min}$, $I_{\max}$), lesion-profile exponents ($\kappa_f$, $\kappa_b$), the FPR cutoff ($k=\lfloor\alpha N_0\rfloor$), the sample-size scaling ($\sqrt{n_{\rm dev}}$, $z_{1-\alpha_s/2}$, $z_{1-\beta_s}$) and the localization tolerance ($\delta$).
+- One "Constants" paragraph at the start of the supplement states their values. $\alpha_s=0.05$ and 80% power are stated explicitly for the first time (they correspond to the quantiles 1.96 and 0.842 already in the text); authors to confirm.
+- The closing HiPaS sentence of Sec. S7 was shortened so the PDF stays at 14 pages.
