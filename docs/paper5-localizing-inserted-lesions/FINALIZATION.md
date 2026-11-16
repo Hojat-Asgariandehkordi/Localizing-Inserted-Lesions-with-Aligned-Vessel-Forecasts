@@ -112,3 +112,26 @@ The authors reverted the full checklist pass (cc037fb → 6bce041) and asked for
 - **Resolution:** the art is a 1470×820 px browser capture of the 2752×1536 original (about 215 dpi at full width). **Before camera-ready:** export the BioRender figure at 300 dpi or more, save it as `figures/biorender/method_overview_v3_hi.png`, scale the pixel coordinates in the script, and add the named BioRender citation.
 - **Toy slice:** the earlier computed figure moved to Supplement Fig. S1 (`scripts/fig_overview.py` → `figures/toy_slice.pdf`), so the toy example in the introduction still has its figure. The learning curves are now Fig. S2.
 - **Fix (2026-11-14):** the BioRender canvas cut off the top edges of panels 1–3 and the bottom edges of panels 4–6. The script now pads the canvas and redraws all six frames as clean rounded rectangles; label positions are unchanged.
+
+## Blue-review merge and 8-page fit (2026-11-15)
+Source: BLUE_REVIEW_33522 marked revisions (main, 11 pp; supplement, 5 pp). Only blue text was treated as new.
+
+**Main-paper blue edits applied**
+- **Readout flexibility:** on the low-texture development subset, neither aligned readout separated from the Hessian baseline.
+- **CNN baseline:** paragraph rewritten with the blue hedging. The fitting probes show learning on small datasets but do not establish convergence. No crop-level advantage of the aligned input under the tested architecture. The comparison does not evaluate localization and does not establish a general limitation of learned scorers. This replaces "the network is not under-trained".
+- **Forecast dominance:** "offers only a descriptive guide"; the score "does not by itself identify a better operating point".
+- **Transfer conditions:** "The low-texture design was also tested under two transfer conditions … using its own frozen cutoffs."
+- **Discussion:** the reliability-based selective rule is stated as evaluated on development data.
+- **Future directions:** the CNN direction now says the CNN comparison did not address localization, consistent with the hedging.
+
+**Supplement.** The blue text (dominance definition, selective use being development-only, timing, LNDb with the Duke detector) was already present.
+
+**8-page fit.** The text ends on page 8; the LLM statement and references are on page 9.
+- Moved to the supplement:
+  - the CNN table → Table S4;
+  - the calibration paired-difference table → Table S5;
+  - the low-texture frozen operating points → Table S6;
+  - the ROC figure → Fig. S3.
+- The main text cites all of these; every number is still in the paper or the supplement (script-checked).
+- Removed repetition between the Discussion and the Conclusion. The Sec. 5.2 threshold formula was replaced by a pointer to the toy example, and the Sec. 3.2 verification list by a pointer to Sec. S1.
+- Condensed three table-restating sentences from the 2026-11-14 pass.

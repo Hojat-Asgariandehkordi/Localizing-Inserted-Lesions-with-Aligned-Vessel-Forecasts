@@ -53,7 +53,7 @@ For an empty forecast the spatial and local template measurements coincide befor
 \label{supp:inference}
 \smallskip\noindent\textit{Cutoffs.}\enspace The matched operating point uses a strict rank cutoff with $k=\lfloor0.10N_0\rfloor$ admissible negative acceptances. Let $s_{(1)}\geq\dots\geq s_{(N_0)}$ denote the negative scores; a candidate is accepted when its score exceeds $s_{(k+1)}$. Test scores determine the cutoff of the within-test ROC, whereas independent LUNA16 negatives determine the frozen cutoff. Stratified comparisons retain the global, scorer-specific cutoffs. Localization additionally requires the highest normalized template peak to lie within 3\,mm of the insertion center, while the crop score remains the ridge output of the same scorer. A control counts against the FPR budget whenever it passes the crop cutoff.
 
-\smallskip\noindent\textit{Bootstrap.}\enspace We draw 3,000 shared patient resamples within acquisition folds. The test ROC recomputes the order statistic with the drawn multiplicities and treats ties as a group. Frozen intervals are conditional on the realized calibration patients and thresholds, whereas recalibrated intervals use an independently seeded stratified bootstrap of the calibration patients. Test and calibration draws remain paired across scorers. The resulting sensitivity and FPR intervals are reported in Table~4 of the main paper, the ROC curves in Fig.~5, and the full HiPaS operating points in Table~3. The localization endpoint and the condition analyses are secondary, and their intervals are not adjusted for multiplicity.
+\smallskip\noindent\textit{Bootstrap.}\enspace We draw 3,000 shared patient resamples within acquisition folds. The test ROC recomputes the order statistic with the drawn multiplicities and treats ties as a group. Frozen intervals are conditional on the realized calibration patients and thresholds, whereas recalibrated intervals use an independently seeded stratified bootstrap of the calibration patients. Test and calibration draws remain paired across scorers. The resulting sensitivity and FPR intervals are reported in Table~\ref{tab:cal}, the ROC curves in Fig.~\ref{fig:roc}, and the full HiPaS operating points in Table~2 of the main paper. The localization endpoint and the condition analyses are secondary, and their intervals are not adjusted for multiplicity.
 
 \smallskip\noindent\textit{Sample size and criteria.}\enspace The development bootstrap used to plan the study estimated that approximately 123 patients provide 80\% power to detect a nonzero crop-sensitivity difference against the refitted rotation, and 74 patients against fixed subtraction, assuming a true improvement of 5\,pp and development-level variability on the holdout. The calculation scales the observed bootstrap standard deviation by $\sqrt{85}$ and uses the normal quantiles 1.96 and 0.842; the 170 eligible test patients exceed both requirements. The practical criterion additionally required an observed point estimate of at least 5\,pp in both comparisons, and the frozen criterion required an FPR of at most 13\% and an upper limit of at most 4\,pp on the paired excess FPR. The broader test did not meet the prespecified crop-level criteria.
 
@@ -102,7 +102,7 @@ Within 3 mm & 163 & 124 & 613 \\
 \label{supp:learned}
 \smallskip\noindent\textit{Architecture and training.}\enspace The hybrid scorer operates on $25^3$ voxels at 1.35-mm spacing, cropped from the resampled observed image and the auxiliary volume. Its convolutional layers have 10, 12 and 8 channels with kernel widths of 5, 3 and 1 and an initial stride of 2. Each channel is summarized by the mean of its eight largest activations in the search core and by its mean within 4.5\,mm. The resulting 16 learned features and 18 shared CT summaries feed a nonlinear classifier with 20 hidden units, complemented by a trainable linear CT path. The network is trained from scratch on the focused fitting data without an external encoder. The auxiliary channel contains average-pooled CT for the CT-only network, the aligned or rotated field for the forecast networks, and the signed residual alongside the unchanged CT channel for the residual network.
 
-All four networks use the same sampled insertion variants, axial rotations and slice reflections, AdamW with an initial learning rate of 0.003 and cosine decay, two seeds, and snapshots at 10, 20 and 30 epochs. The snapshot is selected by development sensitivity at the matched cap, and the logits of the two seeds are averaged. As a sanity check, the CT-only network reaches 99.48\% training AUROC on 12 control crops and 48 strong off-center lesions from four fitting patients, and 86.42\% on a harder probe of the same size containing all insertion variants. Trained on all 46 fitting patients, it comes within one point of the local ridge classifier on development in both AUROC and sensitivity. Fig.~\ref{fig:learned} shows the learning curve and both fitting checks; the comparison on the focused cases is reported in Table~2 of the main paper.
+All four networks use the same sampled insertion variants, axial rotations and slice reflections, AdamW with an initial learning rate of 0.003 and cosine decay, two seeds, and snapshots at 10, 20 and 30 epochs. The snapshot is selected by development sensitivity at the matched cap, and the logits of the two seeds are averaged. As a sanity check, the CT-only network reaches 99.48\% training AUROC on 12 control crops and 48 strong off-center lesions from four fitting patients, and 86.42\% on a harder probe of the same size containing all insertion variants. Trained on all 46 fitting patients, it comes within one point of the local ridge classifier on development in both AUROC and sensitivity. Fig.~\ref{fig:learned} shows the learning curve and both fitting checks; Table~\ref{tab:learned} reports the comparison of the four second inputs on the focused cases.
 
 \begin{figure*}[t]
 \centering
@@ -111,12 +111,39 @@ All four networks use the same sampled insertion variants, axial rotations and s
 \label{fig:learned}
 \end{figure*}
 
+\begin{table}[t]
+\centering
+\input{tables/learned_onecol}
+\caption{Hybrid CNN with four second inputs on the low-texture subset (\%), with identical architecture, data, seeds and budget. The ridge classifier on the CT-only readout reaches 69.17\% AUROC and 32.88\% sensitivity.}
+\label{tab:learned}
+\end{table}
+
 \smallskip\noindent\textit{Selective use and cost.}\enspace For each extrapolated chord we compare the predicted and observed center-to-flank contrast beyond the amplitude-fit support on both legs. The resulting reliability score uses the weaker signed support and penalizes contrast disagreement; the selective policy ranks crops by this score and otherwise falls back to the shell-only classifier. A control policy ranks crops by peak forecast strength instead. Both use the same three development coverage budgets and the same scores for each branch. At approximately 65\% coverage, the two policies reached 48.91\% and 47.91\% sensitivity, compared with 52.14\% for always using aligned fixed subtraction, all at the same negative cap.
 
 Run time was measured on a single CPU thread over 120 loaded crops from 30 focused development patients, with method order randomized. The timed path comprises a new forecast, the decision branch, feature computation, the full search and the classifier for each candidate; for the two policies it additionally includes the reliability or strength score. The selective and strength-based policies required 137 and 132\,ms per loaded crop, and always using the aligned fixed subtraction 133\,ms. The measurement excludes proposal generation and any clinical cost. The selective policy was evaluated on development data only and is not part of the fresh evaluation.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/roc.pdf}
+\caption{ROC curves with pointwise 95\% bands for the profile placements; open circles mark the frozen LUNA16 cutoffs, which transfer poorly to HiPaS.}
+\label{fig:roc}
+\end{figure}
+
 \section{Transfer Results of the Focused Design}
 \label{supp:previous}
-The focused study used separate thresholds derived from 276 controls. It supported a substantial placement effect, but its upper limit on the excess FPR relative to the CT-only classifier was 4.92\,pp, above the stipulated 4\,pp. The morphology-shift condition and the independent LNDb acquisition with shifted insertions did not meet the full transfer criteria~\cite{pedrosa2021}; their achieved rates are listed in Table~5 of the main paper. Within each test set, the profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under the morphology shift and 33.15\% and 32.94\% on LNDb, illustrating the distinction between ranking and calibration transfer.
+\begin{table}[t]
+\centering
+\input{tables/calibration_onecol}
+\caption{Paired differences of the aligned profile at the frozen LUNA16 cutoffs (pp, 95\% CI), with intervals conditional on the calibration set (frozen) or resampling it (recal.).}
+\label{tab:cal}
+\end{table}
+\begin{table}[t]
+\centering
+\input{tables/historical_onecol}
+\caption{Frozen operating points (\%) of the low-texture design on the subset itself and two transfer conditions, using its own 276 calibration negatives.}
+\label{tab:old}
+\end{table}
+
+The focused study used separate thresholds derived from 276 controls. It supported a substantial placement effect, but its upper limit on the excess FPR relative to the CT-only classifier was 4.92\,pp, above the stipulated 4\,pp. The morphology-shift condition and the independent LNDb acquisition with shifted insertions did not meet the full transfer criteria~\cite{pedrosa2021}; their achieved rates are listed in Table~\ref{tab:old}. Within each test set, the profile and Hessian sensitivities at 10\% FPR were 37.93\% and 37.44\% under the morphology shift and 33.15\% and 32.94\% on LNDb, illustrating the distinction between ranking and calibration transfer.
 
 The LNDb detector analysis used the scores and boxes of the Duke detector; adding the spatial features changed mean FROC by $0.00\pp$ $[-0.21,+0.23]$ relative to the full CT-only classifier and by $-0.13\pp$ $[-0.33,+0.35]$ relative to the corresponding sham. The controlled HiPaS transfer addresses a different question, namely localized detection of inserted targets on annotated vascular backgrounds.
