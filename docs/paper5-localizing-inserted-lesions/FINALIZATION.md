@@ -135,3 +135,10 @@ Source: BLUE_REVIEW_33522 marked revisions (main, 11 pp; supplement, 5 pp). Only
 - The main text cites all of these; every number is still in the paper or the supplement (script-checked).
 - Removed repetition between the Discussion and the Conclusion. The Sec. 5.2 threshold formula was replaced by a pointer to the toy example, and the Sec. 3.2 verification list by a pointer to Sec. S1.
 - Condensed three table-restating sentences from the 2026-11-14 pass.
+
+## Official kit, verbatim (2026-11-15)
+- The newly sent `author-kit-CVPR2027-v1-latex.zip` is identical to the earlier kit.
+- Now byte-identical to the kit: `cvpr.sty`, `ieeenat_fullname.bst`, `rebuttal.tex` and **`preamble.tex`**. The kit's `microtype` line is commented out again.
+- `main.tex` is the kit's file with only three changes: the title, an `\input{macros}` line after `\input{preamble}`, and the `\input{sec/...}` lines. The kit's own author block is kept (it is hidden in review mode, and the PDF author field is empty).
+- The paper's packages and macros moved to `macros.tex`.
+- Without `microtype`, the text grew by 4 lines. The Conclusion was tightened to keep the text within 8 pages (the line about calibrating thresholds with target-acquisition negatives is covered in the Discussion). The LLM statement starts page 9.
